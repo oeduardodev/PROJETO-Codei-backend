@@ -35,6 +35,6 @@ Route.group(() => {
   // Rota para adicionar comentários
   Route.post('/moments/:momentId/comments', 'CommentsController.store')
 
-  // Rota para adicionar likes
+  // Rota para adicionar likes (requer autenticação)
   Route.post('/moments/:momentId/like', 'LikesController.like').middleware('auth')
 }).prefix('/api')
