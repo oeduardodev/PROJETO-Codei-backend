@@ -28,7 +28,7 @@ Route.group(() => {
   // Rotas de autenticação
   Route.post('/login', 'UsersController.login')
   Route.post('/register', 'UsersController.register')
-
+  Route.get('/user', 'UsersController.show').middleware('auth')
   // Rotas de momentos
   Route.resource('/moments', 'MomentsController').apiOnly()
 

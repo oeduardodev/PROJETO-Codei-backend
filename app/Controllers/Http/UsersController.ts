@@ -58,4 +58,23 @@ export default class UsersController {
       return response.badRequest({ message: 'Falha no login', error })
     }
   }
+
+
+  public async show({ auth, response }: HttpContextContract) {
+    try {
+      const user = auth.user
+      
+      if (!user) {
+        console.log('Usuário não autenticado')
+        return response.unauthorized({ error: 'Usuário não autenticado' })
+      }
+
+      await user.load('profile') // Carrega o perfil do usuário, se existir
+
+      return response.ok(user) // Retorna o usuário autenticado
+    } catch (error) {
+      console.error('Erro ao obter usuário:', error)
+      return response.internalServerError({ error: 'Erro ao obter usuário', details: error.message })
+    }
+  }
 }
