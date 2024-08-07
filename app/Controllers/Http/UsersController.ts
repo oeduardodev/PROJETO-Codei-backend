@@ -69,9 +69,8 @@ export default class UsersController {
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
-      await user.load('profile') // Carrega o perfil do usuário, se existir
-
-      return response.ok(user) // Retorna o usuário autenticado
+      await user.load('profile')
+      return response.ok(user) 
     } catch (error) {
       console.error('Erro ao obter usuário:', error)
       return response.internalServerError({ error: 'Erro ao obter usuário', details: error.message })
