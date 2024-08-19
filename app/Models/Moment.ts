@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
 import Comment from './Comment'
-import Like from './Like'
 
 export default class Moment extends BaseModel {
   @hasMany(() => Comment)
@@ -23,7 +22,7 @@ export default class Moment extends BaseModel {
   public image: string
 
   @column()
-  public likesCount: HasMany<typeof Like>
+  public likesCount: number
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime

@@ -21,4 +21,5 @@ export default class Like extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+  total: number
 }
