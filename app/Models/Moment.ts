@@ -1,16 +1,20 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, belongsTo, BelongsTo, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
 import Comment from './Comment'
+import User from './User'
 
 export default class Moment extends BaseModel {
   @hasMany(() => Comment)
   public comments: HasMany<typeof Comment>
 
+  @belongsTo(() => User)
+  public user: BelongsTo<typeof User>
+
   @column({ isPrimary: true })
   public id: number
 
   @column()
-  public user_Id: number
+  public userId: number  
 
   @column()
   public title: string
@@ -30,3 +34,4 @@ export default class Moment extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
 }
+  

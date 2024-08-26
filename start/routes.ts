@@ -21,7 +21,7 @@
 import Route from '@ioc:Adonis/Core/Route'
 
 Route.get('/', async () => {
-  return { hello: 'word' }
+  return { hello: 'world' }
 })
 
 Route.group(() => {
@@ -29,15 +29,16 @@ Route.group(() => {
   Route.post('/login', 'UsersController.login')
   Route.post('/register', 'UsersController.register')
   Route.get('/user', 'UsersController.show').middleware('auth')
+
   // Rotas de momentos
   Route.resource('/moments', 'MomentsController').apiOnly()
 
-  // Rota para adicionar comentários
+  // Rota para adicionar comentários (sem autenticação)
   Route.post('/moments/:momentId/comments', 'CommentsController.store')
 
   // Rota para adicionar likes 
-  Route.post('/moments/:momentId/like', 'LikesController.like')
+  Route.post('/moments/:momentId/like', 'LikesController.like').middleware('auth')
 
   // Rota para capturar se existe likes 
-  Route.get('/moments/:momentId/like', 'LikesController.checkLike')
+  Route.get('/moments/:momentId/like', 'LikesController.checkLike').middleware('auth')
 }).prefix('/api')
