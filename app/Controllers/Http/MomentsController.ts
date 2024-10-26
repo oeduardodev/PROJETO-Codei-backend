@@ -41,7 +41,6 @@ export default class MomentsController {
     }
   }
   
-
   public async index() {
     const moments = await Moment.query().preload('comments')
     // await auth.use('api').authenticate()

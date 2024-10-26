@@ -31,7 +31,13 @@ Route.group(() => {
   Route.get('/user', 'UsersController.show').middleware('auth')
 
   // Rotas de momentos
-  Route.resource('/moments', 'MomentsController').apiOnly()
+  Route.resource('/moments', 'MomentsController')
+  .apiOnly()
+  .middleware({
+    store: ['auth'],   
+    update: ['auth'],  
+    destroy: ['auth'], 
+  });
 
   // Rota para adicionar comentários (sem autenticação)
   Route.post('/moments/:momentId/comments', 'CommentsController.store')
