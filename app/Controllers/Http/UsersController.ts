@@ -1,5 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
+import Profile from 'App/Models/Profile'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class UsersController {
@@ -21,6 +22,9 @@ export default class UsersController {
 
       // Criar um novo usuário
       const user = await User.create({ username, email, password: hashedPassword })
+
+      // Criar um perfil vazio associado ao usuário
+      await Profile.create({ userId: user.id })
 
       return response.created(user)
     } catch (error) {
@@ -59,16 +63,19 @@ export default class UsersController {
     }
   }
 
-
+  /**
+   * Método para exibir o perfil do usuário autenticado
+   */
   public async show({ auth, response }: HttpContextContract) {
     try {
       const user = auth.user
-      
+
       if (!user) {
         console.log('Usuário não autenticado')
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
+      // Carregar o perfil do usuário
       await user.load('profile')
       return response.ok(user) 
     } catch (error) {

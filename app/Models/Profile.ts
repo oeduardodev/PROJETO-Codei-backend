@@ -9,7 +9,19 @@ export default class Profile extends BaseModel {
   public userId: number
 
   @column()
+  public photo: string
+
+  @column()
   public bio: string
+
+  @column()
+  public technologies: string
+
+  @column()
+  public friends: string
+
+  @column()
+  public levels: string
 
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>
