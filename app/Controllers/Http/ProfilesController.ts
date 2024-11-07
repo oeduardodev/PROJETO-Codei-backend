@@ -2,7 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Profile from 'App/Models/Profile'
 
 export default class ProfileController {
-    // Método para obter um perfil pelo ID
+    
     public async show({ params, response }: HttpContextContract) {
         const profileId = params.id
 
