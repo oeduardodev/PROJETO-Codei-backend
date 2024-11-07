@@ -77,10 +77,33 @@ export default class UsersController {
 
       // Carregar o perfil do usuário
       await user.load('profile')
-      return response.ok(user) 
+      await user.load('moments')
+      return response.ok(user)
     } catch (error) {
       console.error('Erro ao obter usuário:', error)
       return response.internalServerError({ error: 'Erro ao obter usuário', details: error.message })
     }
   }
+
+  /**
+ * Método para exibir o perfil de um usuário específico pelo ID
+ */
+  public async showById({ params, response }: HttpContextContract) {
+    try {
+      // Capturar o ID dos parâmetros da URL
+      const userId = params.id
+  
+      // Buscar o usuário pelo ID e carregar o perfil e os momentos associados
+      const user = await User.findOrFail(userId)
+      await user.load('profile')
+      await user.load('moments')
+  
+      return response.ok(user)
+    } catch (error) {
+      console.error('Erro ao buscar usuário por ID:', error)
+      return response.notFound({ error: 'Usuário não encontrado' })
+    }
+  }
+  
+  
 }

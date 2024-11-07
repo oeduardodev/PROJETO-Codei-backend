@@ -9,7 +9,9 @@ Route.group(() => {
   Route.post('/login', 'UsersController.login')
   Route.post('/register', 'UsersController.register')
   Route.get('/user', 'UsersController.show').middleware('auth')
-
+  Route.get('/user/:id', 'UsersController.showById')
+  
+  
   // Rotas de momentos
   Route.resource('/moments', 'MomentsController')
   .apiOnly()

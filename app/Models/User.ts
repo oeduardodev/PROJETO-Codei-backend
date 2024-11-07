@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
 import Profile from './Profile'
+import Moments from './Moment'
 
 
 export default class User extends BaseModel {
@@ -28,4 +29,9 @@ export default class User extends BaseModel {
   // Definindo o relacionamento com o perfil
   @hasOne(() => Profile)
   public profile: HasOne<typeof Profile>
+
+    // Definindo o relacionamento com o perfil
+    @hasOne(() => Moments)
+    public moments: HasOne<typeof Moments>
+  
 }
