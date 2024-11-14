@@ -75,9 +75,6 @@ export default class UsersController {
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
-      // Carregar o perfil do usuário
-      await user.load('profile')
-      await user.load('moments')
       return response.ok(user)
     } catch (error) {
       console.error('Erro ao obter usuário:', error)
@@ -95,8 +92,6 @@ export default class UsersController {
   
       // Buscar o usuário pelo ID e carregar o perfil e os momentos associados
       const user = await User.findOrFail(userId)
-      await user.load('profile')
-      await user.load('moments')
   
       return response.ok(user)
     } catch (error) {

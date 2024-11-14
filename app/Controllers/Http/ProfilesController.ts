@@ -2,17 +2,29 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Profile from 'App/Models/Profile'
 
 export default class ProfileController {
-    // Método para obter um perfil pelo ID
+    // Método para obter um perfil pelo userID
     public async show({ params, response }: HttpContextContract) {
-        const profileId = params.id
-
+        const userId = params.id  // Usando o 'id' da URL como o 'userId'
+    
         try {
-            const profile = await Profile.findOrFail(profileId)
+            // Buscar o perfil usando o userId
+            const profile = await Profile.query()
+                .where('userId', userId)  // Encontrar o perfil pelo userId
+                .preload('moments')  // Carregar os momentos relacionados ao perfil
+                .first()  // Garantir que apenas um perfil seja retornado
+    
+            // Verificar se o perfil existe
+            if (!profile) {
+                return response.notFound({ error: 'Perfil não encontrado' })
+            }
+    
+            // Retornar o perfil com os momentos relacionados
             return response.ok({ profile })
         } catch (error) {
-            return response.notFound({ error: 'Perfil não encontrado' })
+            return response.badRequest({ error: 'Erro ao buscar perfil', details: error.message })
         }
     }
+    
     // Método para adicionar um perfil
     public async store({ request, response }: HttpContextContract) {
         const data = request.only(['userId', 'photo', 'bio', 'technologies', 'friends', 'levels'])
@@ -62,14 +74,14 @@ export default class ProfileController {
     public async me({ auth, response }: HttpContextContract) {
         try {
             const userId = auth.user?.id
-    
+
             if (!userId) {
                 return response.unauthorized({ error: 'Usuário não autenticado' })
             }
-    
+
             // Buscando o perfil pelo userId que agora é a chave primária
             let profile = await Profile.findBy('userId', userId)
-    
+
             // Se o perfil não existir, crie um novo perfil vazio
             if (!profile) {
                 profile = await Profile.create({
@@ -81,11 +93,11 @@ export default class ProfileController {
                     levels: []
                 })
             }
-    
+
             return response.ok({ profile })
         } catch (error) {
             return response.badRequest({ error: 'Erro ao obter ou criar perfil', details: error.message })
         }
     }
-    
+
 }    

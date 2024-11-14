@@ -1,8 +1,8 @@
-import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
-import User from 'App/Models/User'
+import { BaseModel, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import Moment from './Moment'
 
 export default class Profile extends BaseModel {
-  @column({ isPrimary: true }) 
+  @column({ isPrimary: true })
   public userId: number
 
   @column()
@@ -32,6 +32,6 @@ export default class Profile extends BaseModel {
   })
   public levels: string[]
 
-  @belongsTo(() => User)
-  public user: BelongsTo<typeof User>
+  @hasMany(() => Moment, { foreignKey: 'userId' })
+  public moments: HasMany<typeof Moment>
 }
