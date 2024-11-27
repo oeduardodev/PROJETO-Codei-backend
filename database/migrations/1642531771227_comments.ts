@@ -5,20 +5,20 @@ export default class Comments extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id')
-      table.string('username')
-      table.string('text')
-      table.integer('moment_id').unsigned().references('moments.id').onDelete('CASCADE')
+      table.increments('id').primary() // Garantir que 'id' seja chave primária
+      table.string('username').notNullable() // Garantir que 'username' seja obrigatório
+      table.string('photo').nullable() // Permitir que 'photo' seja nulo
+      table.string('text').notNullable() // Garantir que 'text' seja obrigatório
+      table.integer('moment_id').unsigned().references('id').inTable('moments').onDelete('CASCADE') // Vincular 'moment_id' à tabela 'moments'
 
       /**
-       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
+       * Usar timestamp com timezone para garantir compatibilidade com bancos como PostgreSQL
        */
-      table.timestamp('created_at', { useTz: true })
-      table.timestamp('updated_at', { useTz: true })
+      table.timestamps(true) // Criação de 'created_at' e 'updated_at' com timezone
     })
   }
 
   public async down() {
-    this.schema.dropTable(this.tableName)
+    this.schema.dropTable(this.tableName) // Remover a tabela 'comments'
   }
 }

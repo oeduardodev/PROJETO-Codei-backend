@@ -9,6 +9,9 @@ export default class Comment extends BaseModel {
   public username: string
 
   @column()
+  public photo: string
+
+  @column()
   public text: string
 
   @column()

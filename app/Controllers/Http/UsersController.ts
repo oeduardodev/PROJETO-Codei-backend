@@ -8,7 +8,7 @@ export default class UsersController {
    * Método para registrar um novo usuário
    */
   public async register({ request, response }: HttpContextContract) {
-    const { username, email, password } = request.only(['username', 'email', 'password'])
+    const { username, email, password, photo } = request.only(['username', 'email', 'password', 'photo']);
 
     try {
       // Verificar se o usuário já existe
@@ -21,7 +21,7 @@ export default class UsersController {
       const hashedPassword = await Hash.make(password)
 
       // Criar um novo usuário
-      const user = await User.create({ username, email, password: hashedPassword })
+      const user = await User.create({ username, email, photo, password: hashedPassword })
 
       // Criar um perfil vazio associado ao usuário
       await Profile.create({ userId: user.id })
