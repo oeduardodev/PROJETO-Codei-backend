@@ -7,9 +7,9 @@ export default class Users extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.string('username').unique().notNullable()
-      table.string('photo').nullable();
       table.string('email').unique().notNullable()
       table.string('password').notNullable()
+      table.string('photo').nullable().defaultTo(null); 
       table.boolean('admin').defaultTo(false)
       table.string('remember_me_token').nullable()
 
