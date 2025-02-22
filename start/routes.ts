@@ -37,6 +37,6 @@ Route.group(() => {
     Route.get('/:id', 'ProfilesController.show')
     Route.put('/:id', 'ProfilesController.update').middleware('auth')
     Route.delete('/:id', 'ProfilesController.destroy').middleware('auth')
-  }).prefix('/profiles')  
+  }).prefix('/profile')  
   
 }).prefix('/api')
