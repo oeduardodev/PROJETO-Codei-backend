@@ -37,6 +37,8 @@ Route.group(() => {
     Route.get('/:id', 'ProfilesController.show')
     Route.put('/:id', 'ProfilesController.update').middleware('auth')
     Route.delete('/:id', 'ProfilesController.destroy').middleware('auth')
+    Route.post('/friends/:friendId', 'ProfilesController.addFriend').middleware('auth')
+    Route.delete('/friends/:friendId', 'ProfilesController.removeFriend').middleware('auth')    
   }).prefix('/profile')  
   
 }).prefix('/api')

@@ -131,4 +131,45 @@ public async update({ params, request, response }: HttpContextContract) {
         }
     }
 
+    // Método adicionar um amigo
+    public async addFriend({ auth, params, response }: HttpContextContract) {
+        const { friendId } = params;
+        const id = auth.user?.id; // Obtém o ID do usuário autenticado
+    
+        if (!id) {
+            return response.unauthorized({ error: 'Usuário não autenticado' });
+        }
+    
+        try {
+            const profile = await Profile.findOrFail(id);
+    
+            if (!profile.friends.includes(friendId)) {
+                profile.friends.push(friendId);
+                await profile.save();
+            }
+    
+            return response.ok({ message: 'Convite enviado com sucesso', friends: profile.friends });
+        } catch (error) {
+            return response.badRequest({ error: 'Erro ao adicionar amigo', details: error.message });
+        }
+    }
+    
+    // Método para remover um amigo
+    public async removeFriend({ auth, params, response }: HttpContextContract) {
+        const { friendId } = params;
+        const id = auth.user?.id; // Obtém o ID do usuário autenticado
+
+        try {
+            const profile = await Profile.findOrFail(id);
+
+            // Remove o friendId da lista de amigos
+            profile.friends = profile.friends.filter((friend) => friend !== friendId);
+            await profile.save();
+
+            return response.ok({ message: 'Amigo removido com sucesso', friends: profile.friends });
+        } catch (error) {
+            return response.badRequest({ error: 'Erro ao remover amigo', details: error.message });
+        }
+    }
+
 }    
