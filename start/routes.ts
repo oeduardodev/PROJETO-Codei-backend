@@ -40,5 +40,10 @@ Route.group(() => {
     Route.post('/friends/:friendId', 'ProfilesController.addFriend').middleware('auth')
     Route.delete('/friends/:friendId', 'ProfilesController.removeFriend').middleware('auth')    
   }).prefix('/profile')  
+
+  Route.group(() => {
+    Route.post('/send', 'MessagesController.send').middleware('auth')
+    Route.get('/conversations', 'MessagesController.index').middleware('auth')
+  }).prefix('/message')
   
 }).prefix('/api')
