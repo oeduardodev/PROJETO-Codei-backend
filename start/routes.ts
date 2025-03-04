@@ -10,16 +10,15 @@ Route.group(() => {
   Route.post('/register', 'UsersController.register')
   Route.get('/user', 'UsersController.show').middleware('auth')
   Route.get('/user/:id', 'UsersController.showById')
-  
-  
+
   // Rotas de momentos
   Route.resource('/moments', 'MomentsController')
-  .apiOnly()
-  .middleware({
-    store: ['auth'],   
-    update: ['auth'],  
-    destroy: ['auth'], 
-  });
+    .apiOnly()
+    .middleware({
+      store: ['auth'],
+      update: ['auth'],
+      destroy: ['auth'],
+    });
 
   // Rota para adicionar comentários (sem autenticação)
   Route.post('/moments/:momentId/comments', 'CommentsController.store')
@@ -37,13 +36,18 @@ Route.group(() => {
     Route.get('/:id', 'ProfilesController.show')
     Route.put('/:id', 'ProfilesController.update').middleware('auth')
     Route.delete('/:id', 'ProfilesController.destroy').middleware('auth')
-    Route.post('/friends/:friendId', 'ProfilesController.addFriend').middleware('auth')
-    Route.delete('/friends/:friendId', 'ProfilesController.removeFriend').middleware('auth')    
-  }).prefix('/profile')  
+  }).prefix('/profile')
 
   Route.group(() => {
     Route.post('/send', 'MessagesController.send').middleware('auth')
     Route.get('/conversations', 'MessagesController.index').middleware('auth')
   }).prefix('/message')
-  
-}).prefix('/api')
+
+  Route.group(() => {
+    Route.get('/', 'ProfilesController.listFriends').middleware('auth')
+    Route.post('/:friendId', 'ProfilesController.addFriend').middleware('auth')
+    Route.delete('/:friendId', 'ProfilesController.removeFriend').middleware('auth')
+    Route.get('/:userId', 'ProfilesController.listFriendsByID')
+  }).prefix('/friends')
+
+}).prefix('/api') 

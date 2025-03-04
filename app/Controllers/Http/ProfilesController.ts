@@ -172,4 +172,59 @@ public async update({ params, request, response }: HttpContextContract) {
         }
     }
 
+    // Método para listar os amigos mútuos
+    public async listFriends({ auth, response }: HttpContextContract) {
+        const userId = auth.user?.id;
+        
+        // Verifica se o userId está disponível
+        if (!userId) {
+            return response.unauthorized({ error: 'Usuário não autenticado' });
+        }
+    
+        try {
+            // Busca o perfil do usuário autenticado
+            const profile = await Profile.findOrFail(userId);
+            const friendIds = profile.friends;
+            
+            // Busca os perfis dos amigos para verificar reciprocidade
+            const friends = await Profile.query()
+                .whereIn('userId', friendIds);
+            
+            // Filtra apenas os usuários que também adicionaram o usuário autenticado
+            const myFriends = friends.filter(friend => friend.friends.includes(userId.toString())); // Garantir que userId seja uma string
+            
+            return response.ok({ myFriends });
+        } catch (error) {
+            return response.badRequest({ error: 'Erro ao listar amigos', details: error.message });
+        }
+    }
+
+    public async listFriendsByID({ params, response }: HttpContextContract) {
+        const userId = params.userId || params.id;
+    
+        if (!userId) {
+            return response.badRequest({ error: 'ID do usuário não foi fornecido' });
+        }
+    
+        try {
+            // Busca o perfil do usuário com o userId capturado
+            const profile = await Profile.find(userId);
+            
+            if (!profile) {
+                return response.notFound({ error: 'Perfil não encontrado' });
+            }
+    
+            const friendIds = profile.friends;
+    
+            // Busca os perfis dos amigos
+            const friends = await Profile.query().whereIn('userId', friendIds);
+    
+            // Filtra apenas os usuários que também adicionaram o usuário autenticado
+            const myFriends = friends.filter(friend => friend.friends.includes(userId.toString()));
+    
+            return response.ok({ myFriends });
+        } catch (error) {
+            return response.badRequest({ error: 'Erro ao listar amigos', details: error.message });
+        }
+    }
 }    
