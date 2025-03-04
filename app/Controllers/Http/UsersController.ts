@@ -11,27 +11,27 @@ export default class UsersController {
     const { username, email, password, photo } = request.only(['username', 'email', 'password', 'photo']);
 
     try {
-      // Verificar se o usuário já existe
-      const existingUser = await User.findBy('email', email)
-      if (existingUser) {
-        return response.badRequest({ message: 'E-mail já registrado' })
-      }
+        // Verificar se o usuário já existe
+        const existingUser = await User.findBy('email', email)
+        if (existingUser) {
+            return response.badRequest({ message: 'E-mail já registrado' })
+        }
 
-      // Criptografar a senha
-      const hashedPassword = await Hash.make(password)
+        // Criptografar a senha
+        const hashedPassword = await Hash.make(password)
 
-      // Criar um novo usuário
-      const user = await User.create({ username, email, photo, password: hashedPassword })
+        // Criar um novo usuário
+        const user = await User.create({ username, email, photo, password: hashedPassword })
 
-      // Criar um perfil vazio associado ao usuário
-      await Profile.create({ userId: user.id })
+        // Criar um perfil vazio associado ao usuário
+        await Profile.create({ userId: user.id, username: username })
 
-      return response.created(user)
+        return response.created(user)
     } catch (error) {
-      console.error('Erro ao registrar conta:', error)
-      return response.badRequest({ message: 'Erro em registrar conta', error })
+        console.error('Erro ao registrar conta:', error)
+        return response.badRequest({ message: 'Erro em registrar conta', error })
     }
-  }
+}
 
   /**
    * Método para fazer login

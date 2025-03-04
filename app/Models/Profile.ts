@@ -4,6 +4,9 @@ import Moment from './Moment'
 export default class Profile extends BaseModel {
   @column({ isPrimary: true })
   public userId: number
+  
+  @column()
+  public username: string
 
   @column()
   public photo: string
