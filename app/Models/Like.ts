@@ -5,8 +5,6 @@ export default class Like extends BaseModel {
   @column({ isPrimary: true })
   public userId: number
 
-  public id: number
-
   @column()
   public username: string
 

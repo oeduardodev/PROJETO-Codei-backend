@@ -2,30 +2,63 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Profile from 'App/Models/Profile'
 
 export default class ProfileController {
-    // Método para obter um perfil pelo userID
+
+    /*
+     *  Obtém o perfil do usuário autenticado e logado
+     */
+    public async me({ auth, response }: HttpContextContract) {
+        try {
+            const userId = auth.user!.id;
+
+            if (!userId) {
+                return response.unauthorized({ error: 'Usuário não autenticado' });
+            }
+
+            let profile = await Profile.query().where('userId', userId).preload('moments').first();
+
+            if (!profile) {
+                profile = await Profile.create({
+                    userId,
+                    photo: '',
+                    bio: '',
+                    technologies: [],
+                    friends: [],
+                    levels: [],
+                    username: auth.user!.username || 'default_username',
+                });
+            }
+
+            return response.ok({ profile });
+        } catch (error) {
+            return response.badRequest({ error: 'Erro ao obter ou criar perfil', details: error.message });
+        }
+    }
+
+    /*
+     *  Lista todos os perfis
+     */
     public async show({ params, response }: HttpContextContract) {
-        const userId = params.id  // Usando o 'id' da URL como o 'userId'
+        const userId = params.id
 
         try {
-            // Buscar o perfil usando o userId
             const profile = await Profile.query()
-                .where('userId', userId)  // Encontrar o perfil pelo userId
-                .preload('moments')  // Carregar os momentos relacionados ao perfil
-                .first()  // Garantir que apenas um perfil seja retornado
+                .where('userId', userId)
+                .preload('moments')
+                .first()
 
-            // Verificar se o perfil existe
             if (!profile) {
                 return response.notFound({ error: 'Perfil não encontrado' })
             }
 
-            // Retornar o perfil com os momentos relacionados
-            return response.ok({ profile})
+            return response.ok({ profile })
         } catch (error) {
             return response.badRequest({ error: 'Erro ao buscar perfil', details: error.message })
         }
     }
 
-    // Método para adicionar um perfil
+    /*
+     *  Cria um novo perfil
+     */
     public async store({ request, response }: HttpContextContract) {
         const data = request.only(['userId', 'photo', 'bio', 'technologies', 'friends', 'levels', 'username'])
 
@@ -37,40 +70,42 @@ export default class ProfileController {
         }
     }
 
-    // Método para atualizar um perfil
+    /*
+     *  Atualiza um perfil
+     */
     public async update({ params, request, response }: HttpContextContract) {
         const profileId = params.id;
 
-        // Verifique se o profileId está definido
         if (!profileId) {
             return response.badRequest({ error: 'ID do perfil não foi fornecido' });
         }
 
-        const data = request.only(['photo', 'bio', 'technologies', 'friends', 'levels', 'username']); 
+        const data = request.only(['photo', 'bio', 'technologies', 'friends', 'levels', 'username']);
 
         try {
             const profile = await Profile.findOrFail(profileId);
 
-            // Atualiza os campos permitidos no perfil
             profile.merge({
                 photo: data.photo,
                 bio: data.bio,
                 technologies: data.technologies,
                 friends: data.friends,
                 levels: data.levels,
-                username: data.username, 
+                username: data.username,
             });
-            
+
             await profile.save();
 
-            return response.ok({ profile }); // Retorna o perfil e o nome de usuário atualizado
+            return response.ok({ profile });
 
         } catch (error) {
             return response.badRequest({ error: 'Erro ao atualizar perfil', details: error.message });
         }
     }
 
-    // Método para apagar um perfil
+    /*
+     *  Deleta um perfil
+     */
     public async destroy({ params, response }: HttpContextContract) {
         const profileId = params.id
 
@@ -83,72 +118,41 @@ export default class ProfileController {
         }
     }
 
-    // Método para obter o perfil do usuário logado
-    public async me({ auth, response }: HttpContextContract) {
-        try {
-            const userId = auth.user?.id;
-    
-            if (!userId) {
-                return response.unauthorized({ error: 'Usuário não autenticado' });
-            }
-    
-            // Tenta encontrar o perfil do usuário logado
-            let profile = await Profile.query()
-                .where('userId', userId)  // Encontrar o perfil do usuario logado
-                .preload('moments')       // Carregar os momentos relacionados ao perfil
-                .first();                
-    
-            // Se o perfil não existir, crie um novo perfil vazio
-            if (!profile) {
-                profile = await Profile.create({
-                    userId,               // Usa userId como chave primária
-                    photo: '',
-                    bio: '',
-                    technologies: [],
-                    friends: [],
-                    levels: [],
-                    username: auth.user?.username || 'default_username', // Adiciona o campo username
-                });
-            }
-    
-            return response.ok({ profile });
-        } catch (error) {
-            return response.badRequest({ error: 'Erro ao obter ou criar perfil', details: error.message });
-        }
-    }
-
-    // Método adicionar um amigo
+    /*
+     *  Adiciona amigo
+     */
     public async addFriend({ auth, params, response }: HttpContextContract) {
         const { friendId } = params;
-        const id = auth.user?.id; // Obtém o ID do usuário autenticado
-    
+        const id = auth.user!.id;
+
         if (!id) {
             return response.unauthorized({ error: 'Usuário não autenticado' });
         }
-    
+
         try {
             const profile = await Profile.findOrFail(id);
-    
+
             if (!profile.friends.includes(friendId)) {
                 profile.friends.push(friendId);
                 await profile.save();
             }
-    
+
             return response.ok({ message: 'Convite enviado com sucesso', friends: profile.friends });
         } catch (error) {
             return response.badRequest({ error: 'Erro ao adicionar amigo', details: error.message });
         }
     }
-    
-    // Método para remover um amigo
+
+    /*
+     *  Remove amigo
+     */
     public async removeFriend({ auth, params, response }: HttpContextContract) {
         const { friendId } = params;
-        const id = auth.user?.id; // Obtém o ID do usuário autenticado
+        const id = auth.user!.id;
 
         try {
             const profile = await Profile.findOrFail(id);
 
-            // Remove o friendId da lista de amigos
             profile.friends = profile.friends.filter((friend) => friend !== friendId);
             await profile.save();
 
@@ -158,9 +162,11 @@ export default class ProfileController {
         }
     }
 
-    // Método para listar os amigos mútuos
+    /*
+     *  Lista todos os amigos
+     */
     public async listFriends({ auth, response }: HttpContextContract) {
-        const userId = auth.user?.id;
+        const userId = auth.user!.id;
 
         if (!userId) {
             return response.unauthorized({ error: 'Usuário não autenticado' });
@@ -168,7 +174,7 @@ export default class ProfileController {
 
         try {
             const profile = await Profile.findOrFail(userId);
-            const friendIds = profile.friends.map(String); // Garante que os IDs sejam strings
+            const friendIds = profile.friends.map(String);
 
             const friends = await Profile.query().whereIn('userId', friendIds);
 
@@ -183,6 +189,9 @@ export default class ProfileController {
         }
     }
 
+    /*
+     *  Lista amigos de um usuário pelo ID
+     */
     public async listFriendsByID({ params, response }: HttpContextContract) {
         const userId = params.userId || params.id;
 
@@ -191,19 +200,15 @@ export default class ProfileController {
         }
 
         try {
-            // Busca o perfil do usuário com o userId capturado
             const profile = await Profile.find(userId);
 
             if (!profile) {
                 return response.notFound({ error: 'Perfil não encontrado' });
             }
 
-            const friendIds = profile.friends.map(String); // Garante que os IDs sejam strings
-
-            // Busca os perfis dos amigos
+            const friendIds = profile.friends.map(String);
             const friends = await Profile.query().whereIn('userId', friendIds);
-
-            // Filtra apenas os usuários que também adicionaram o usuário autenticado
+            
             const myFriends = friends.filter(friend => {
                 const friendList = Array.isArray(friend.friends) ? friend.friends.map(String) : [];
                 return friendList.includes(String(userId));

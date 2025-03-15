@@ -1,8 +1,8 @@
 node_modules
 build
 coverage
+tmp
 .vscode
 .DS_STORE
 .env
 .sqlite3
-tmp/db.sqlite3

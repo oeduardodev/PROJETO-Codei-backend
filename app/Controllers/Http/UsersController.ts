@@ -4,44 +4,39 @@ import Profile from 'App/Models/Profile'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class UsersController {
-  /**
-   * Método para registrar um novo usuário
+
+  /*
+   * Registra um novo usuário no sistema
    */
   public async register({ request, response }: HttpContextContract) {
     const { username, email, password, photo } = request.only(['username', 'email', 'password', 'photo']);
 
     try {
-        // Verificar se o usuário já existe
-        const existingUser = await User.findBy('email', email)
-        if (existingUser) {
-            return response.badRequest({ message: 'E-mail já registrado' })
-        }
+      const existingUser = await User.findBy('email', email)
+      if (existingUser) {
+        return response.badRequest({ message: 'E-mail já registrado' })
+      }
 
-        // Criptografar a senha
-        const hashedPassword = await Hash.make(password)
+      const hashedPassword = await Hash.make(password)
 
-        // Criar um novo usuário
-        const user = await User.create({ username, email, photo, password: hashedPassword })
+      const user = await User.create({ username, email, photo, password: hashedPassword })
 
-        // Criar um perfil vazio associado ao usuário
-        await Profile.create({ userId: user.id, username: username })
+      await Profile.create({ userId: user.id, username: username })
 
-        return response.created(user)
+      return response.created(user)
     } catch (error) {
-        console.error('Erro ao registrar conta:', error)
-        return response.badRequest({ message: 'Erro em registrar conta', error })
+      console.error('Erro ao registrar conta:', error)
+      return response.badRequest({ message: 'Erro em registrar conta', error })
     }
-}
+  }
 
-  /**
-   * Método para fazer login
+  /*
+   * Realiza o login do usuário e gera um token de autenticação
    */
   public async login({ request, response, auth }: HttpContextContract) {
     try {
       const { username, password } = request.only(['username', 'password'])
-      console.log('username recebido:', username)
 
-      // Verificar se o usuário existe
       const user = await User.findBy('username', username)
       if (!user) {
         return response.unauthorized({ message: 'Credenciais inválidas' })
@@ -63,8 +58,8 @@ export default class UsersController {
     }
   }
 
-  /**
-   * Método para exibir o perfil do usuário autenticado
+  /*
+   * Retorna os dados do usuário autenticado
    */
   public async show({ auth, response }: HttpContextContract) {
     try {
@@ -82,23 +77,19 @@ export default class UsersController {
     }
   }
 
-  /**
- * Método para exibir o perfil de um usuário específico pelo ID
- */
+  /*
+   * Retorna os dados de um usuário específico pelo ID
+   */
   public async showById({ params, response }: HttpContextContract) {
     try {
-      // Capturar o ID dos parâmetros da URL
       const userId = params.id
-  
-      // Buscar o usuário pelo ID e carregar o perfil e os momentos associados
+
       const user = await User.findOrFail(userId)
-  
+
       return response.ok(user)
     } catch (error) {
       console.error('Erro ao buscar usuário por ID:', error)
       return response.notFound({ error: 'Usuário não encontrado' })
     }
   }
-  
-  
 }
