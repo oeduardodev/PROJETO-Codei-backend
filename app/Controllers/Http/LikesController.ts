@@ -13,7 +13,7 @@ export default class LikesController {
         return response.unauthorized({ message: 'Usuário não autenticado' });
       }
   
-      const momentId = params.momentId;
+      const momentId = params.id; 
       const user = auth.user;
       const moment = await Moment.findOrFail(momentId);
   
@@ -21,22 +21,28 @@ export default class LikesController {
   
       if (existingLike) {
         await existingLike.delete();
-        moment.likesCount -= 1; 
+        moment.likesCount -= 1;
       } else {
         await Like.create({
           userId: user.id,
           momentId: momentId,
         });
-        moment.likesCount += 1; 
+        moment.likesCount += 1;
       }
   
       await moment.save();
       return response.ok({ message: 'Operação de like/deslike realizada com sucesso' });
   
     } catch (error) {
-      return response.internalServerError({ message: 'Erro ao processar like', error });
+      console.error(error)
+      return response.internalServerError({ 
+        message: 'Erro ao processar like', 
+        error: error.message, 
+        stack: error.stack 
+      });
     }
   }
+  
   
 
   /*
@@ -45,18 +51,22 @@ export default class LikesController {
   public async checkLike({ params, auth, response }: HttpContextContract) {
     try {
       await auth.use('api').authenticate();
-
-      const momentId = params.momentId;
+  
+      const momentId = params.id; // <- Corrigido aqui
       const user = auth.user!;
-      
-      const existingLike = await Like.query().where('user_id', user.id).where('moment_id', momentId).first();
-
-      if (existingLike) {
-        return response.ok({ liked: true });
-      }
-      return response.ok({ liked: false });
+  
+      const existingLike = await Like.query()
+        .where('user_id', user.id)
+        .where('moment_id', momentId)
+        .first();
+  
+      return response.ok({ liked: !!existingLike });
     } catch (error) {
-      return response.internalServerError({ message: 'Erro ao verificar like', error });
+      console.error('Erro ao verificar like:', error);
+      return response.internalServerError({
+        message: 'Erro ao verificar like',
+        error: error.message || error,
+      });
     }
   }
 }

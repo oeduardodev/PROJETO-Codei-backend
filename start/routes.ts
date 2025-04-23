@@ -15,21 +15,18 @@ Route.group(() => {
     Route.post('/register', 'UsersController.register')
     Route.get('/user', 'UsersController.show').middleware('auth')
     Route.get('/user/:id', 'UsersController.showById')
-    Route.resource('/moments', 'MomentsController')
-      .apiOnly()
-      .middleware({
-        store: ['auth'],
-        update: ['auth'],
-        destroy: ['auth'],
-      });
+
   }).prefix('/auth')
 
   // Rotas de Momentos (Moments)
   Route.group(() => {
-    Route.post('/:momentId/comment', 'CommentsController.store')
-    Route.get('/:momentId/comments', 'CommentsController.showByMomentId')
-    Route.post('/:momentId/like', 'LikesController.like').middleware('auth')
-    Route.get('/:momentId/like', 'LikesController.checkLike').middleware('auth')
+    Route.get('/', 'MomentsController.index')
+    Route.post('/', 'MomentsController.store').middleware('auth')
+    Route.get('/:id', 'MomentsController.show')
+    Route.post('/:id/comments', 'CommentsController.store')
+    Route.get('/:id/comments', 'CommentsController.showByMomentId')
+    Route.post('/:id/like', 'LikesController.like').middleware('auth')
+    Route.get('/:id/like', 'LikesController.checkLike').middleware('auth')
   }).prefix('/moments')
 
   // Rotas de Perfil (Profile) 
