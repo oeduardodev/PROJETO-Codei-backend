@@ -7,7 +7,7 @@ export default class MessagesController {
   /*
    * Envia uma nova mensagem para um usuário específico.
    */
-  public async send({ request, auth }: HttpContextContract) {
+  public async sendMessages({ request, auth }: HttpContextContract) {
     const { receiverId, content } = request.only(['receiverId', 'content'])
 
     const message = await Message.create({
@@ -24,13 +24,36 @@ export default class MessagesController {
   /*
    * Lista todas as mensagens em que o usuário autenticado está envolvido.
    */
-  public async index({ auth }: HttpContextContract) {
+  public async getMessages({ auth }: HttpContextContract) {
     const messages = await Message.query()
       .where('sender_id', auth.user!.id)
       .orWhere('receiver_id', auth.user!.id)
-      .preload('sender')  
-      .preload('receiver') 
+      .preload('sender')
+      .preload('receiver')
 
     return messages
   }
+
+  public async getMessagesById({ params, auth }) {
+    const currentUserId = auth.user?.id 
+    const otherUserId = Number(params.id)
+
+    const messages = await Message.query()
+      .where((query) => {
+        query
+          .where('sender_id', currentUserId)
+          .andWhere('receiver_id', otherUserId)
+      })
+      .orWhere((query) => {
+        query
+          .where('sender_id', otherUserId)
+          .andWhere('receiver_id', currentUserId)
+      })
+      .preload('sender')
+      .preload('receiver')
+      .orderBy('created_at', 'asc')
+
+    return messages
+  }
+
 }

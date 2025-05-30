@@ -40,8 +40,9 @@ Route.group(() => {
 
   // Rotas de Mensagens (message) 
   Route.group(() => {
-    Route.post('/send', 'MessagesController.send').middleware('auth')
-    Route.get('/conversations', 'MessagesController.index').middleware('auth')
+    Route.post('/send', 'MessagesController.sendMessages').middleware('auth')
+    Route.get('/conversations', 'MessagesController.getMessages').middleware('auth')
+    Route.get('/:id', 'MessagesController.getMessagesById').middleware('auth')
   }).prefix('/message')
 
   // Rotas de Amigos (friends)
