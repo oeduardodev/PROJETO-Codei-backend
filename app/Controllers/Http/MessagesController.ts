@@ -8,18 +8,20 @@ export default class MessagesController {
    * Envia uma nova mensagem para um usuário específico.
    */
   public async sendMessages({ request, auth }: HttpContextContract) {
-    const { receiverId, content } = request.only(['receiverId', 'content'])
+    const { receiver, content } = request.only(['receiver', 'content']);
 
     const message = await Message.create({
       senderId: auth.user!.id,
-      receiverId,
+      receiverId: receiver,
       content,
-    })
+    });
 
-    Ws.io.to(receiverId.toString()).emit('newMessage', message)
+    Ws.io.to(receiver.toString()).emit('newMessage', message);
+    Ws.io.to(auth.user!.id.toString()).emit('newMessage', message);
 
-    return message
+    return message;
   }
+
 
   /*
    * Lista todas as mensagens em que o usuário autenticado está envolvido.

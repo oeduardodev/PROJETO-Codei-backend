@@ -9,13 +9,11 @@ class Ws {
     if (this.booted) { 
       return 
     }
-    this.booted = true // Marca o servidor como inicializado
-    this.io = new Server(AdonisServer.instance!, { // Cria uma nova instância do servidor WebSocket
-      cors: {
-        origin: '*', // Configura CORS para permitir qualquer origem
-      },
+    this.booted = true
+    this.io = new Server(AdonisServer.instance!, {
+      cors: { origin: '*' },
     })
   }
 }
 
-export default new Ws() // Exporta uma instância da classe Ws como padrão
+export default new Ws()
