@@ -32,6 +32,7 @@
     "@adonisjs/repl": "^3.1.8",
     "@adonisjs/session": "^4.0.6",
     "@adonisjs/websocket": "^1.0.12",
+    "cloudinary": "^2.6.1",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^2.3.0",
     "pg": "^8.13.1",

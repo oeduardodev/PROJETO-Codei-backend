@@ -1,6 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Profile from 'App/Models/Profile'
-
+import { v4 as uuidv4 } from 'uuid'
+import { uploadToCloudinary } from 'App/Services/CloudinaryService'
+import fs from 'fs'
+// Removed unused Application import
 export default class ProfileController {
 
     /*
@@ -93,6 +96,24 @@ export default class ProfileController {
                 levels: data.levels,
                 username: data.username,
             });
+
+            // Se estiver recebendo um arquivo de imagem, faça upload
+            const imageFile = request.file('photo');
+            if (imageFile) {
+                const imageName = `${uuidv4()}.${imageFile.extname}`;
+                const uploadFolder = process.env.TMP_PATH || 'tmp/uploads';
+                const imagePath = `${uploadFolder}/${imageName}`;
+
+                // Move o arquivo para uma pasta temporária
+                await imageFile.move(uploadFolder, { name: imageName, overwrite: true });
+
+                // Faz upload para Cloudinary
+                const uploadResult = await uploadToCloudinary(imagePath);
+                profile.photo = (uploadResult as any).secure_url;
+
+                // Remove o arquivo local temporário
+                fs.unlinkSync(imagePath);
+            }
 
             await profile.save();
 

@@ -3,12 +3,14 @@ import Moment from 'App/Models/Moment'
 import Application from '@ioc:Adonis/Core/Application'
 
 import { v4 as uuidv4 } from 'uuid'
+import { uploadToCloudinary } from 'App/Services/CloudinaryService'
+import fs from 'fs'
 
 export default class MomentsController {
 
   private validationOptions = {
     types: ['image'],
-    size: '2mb',
+    size: '1mb',
   }
 
   /*
@@ -20,8 +22,18 @@ export default class MomentsController {
 
     if (image) {
       const imageName = `${uuidv4()}.${image.extname}`
-      await image.move(Application.tmpPath('uploads'), { name: imageName })
-      body.image = imageName
+      const uploadFolder = Application.tmpPath('uploads')
+      const imagePath = `${uploadFolder}/${imageName}`
+
+      // Move o arquivo para uma pasta temporária
+      await image.move(uploadFolder, { name: imageName, overwrite: true })
+
+      // Faz upload para Cloudinary
+      const uploadResult = await uploadToCloudinary(imagePath)
+      body.image = (uploadResult as any).secure_url
+
+      // Remove o arquivo local temporário
+      fs.unlinkSync(imagePath)
     }
 
     const user = auth.user!
