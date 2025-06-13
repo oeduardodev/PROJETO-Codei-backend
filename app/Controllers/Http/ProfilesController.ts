@@ -85,6 +85,22 @@ export default class ProfileController {
 
         const data = request.only(['photo', 'bio', 'technologies', 'friends', 'levels', 'username']);
 
+        // Corrige os campos que vêm como string (por causa do FormData)
+        const parseJSONField = (field: any) => {
+            if (typeof field === 'string') {
+                try {
+                    return JSON.parse(field);
+                } catch {
+                    return [];
+                }
+            }
+            return field;
+        };
+
+        data.technologies = parseJSONField(data.technologies);
+        data.friends = parseJSONField(data.friends);
+        data.levels = parseJSONField(data.levels);
+
         try {
             const profile = await Profile.findOrFail(profileId);
 
@@ -97,21 +113,18 @@ export default class ProfileController {
                 username: data.username,
             });
 
-            // Se estiver recebendo um arquivo de imagem, faça upload
+            // Upload de imagem, se houver
             const imageFile = request.file('photo');
             if (imageFile) {
                 const imageName = `${uuidv4()}.${imageFile.extname}`;
                 const uploadFolder = process.env.TMP_PATH || 'tmp/uploads';
                 const imagePath = `${uploadFolder}/${imageName}`;
 
-                // Move o arquivo para uma pasta temporária
                 await imageFile.move(uploadFolder, { name: imageName, overwrite: true });
 
-                // Faz upload para Cloudinary
                 const uploadResult = await uploadToCloudinary(imagePath);
                 profile.photo = (uploadResult as any).secure_url;
 
-                // Remove o arquivo local temporário
                 fs.unlinkSync(imagePath);
             }
 
