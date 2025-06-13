@@ -144,14 +144,14 @@ export default class ProfileController {
      */
     public async addFriend({ auth, params, response }: HttpContextContract) {
         const { friendId } = params;
-        const id = auth.user!.id;
+        const userId = auth.user!.id;
 
-        if (!id) {
+        if (!userId) {
             return response.unauthorized({ error: 'Usuário não autenticado' });
         }
 
         try {
-            const profile = await Profile.findOrFail(id);
+            const profile = await Profile.query().where('userId', userId).firstOrFail();
 
             if (!profile.friends.includes(friendId)) {
                 profile.friends.push(friendId);
@@ -169,10 +169,10 @@ export default class ProfileController {
      */
     public async removeFriend({ auth, params, response }: HttpContextContract) {
         const { friendId } = params;
-        const id = auth.user!.id;
+        const userId = auth.user!.id;
 
         try {
-            const profile = await Profile.findOrFail(id);
+            const profile = await Profile.query().where('userId', userId).firstOrFail();
 
             profile.friends = profile.friends.filter((friend) => friend !== friendId);
             await profile.save();
@@ -195,7 +195,7 @@ export default class ProfileController {
 
         try {
             const profile = await Profile.findOrFail(userId);
-            const friendIds = profile.friends.map(String);
+            const friendIds = Array.isArray(profile.friends) ? profile.friends.map(String) : [];
 
             const friends = await Profile.query().whereIn('userId', friendIds);
 
@@ -229,7 +229,7 @@ export default class ProfileController {
 
             const friendIds = profile.friends.map(String);
             const friends = await Profile.query().whereIn('userId', friendIds);
-            
+
             const myFriends = friends.filter(friend => {
                 const friendList = Array.isArray(friend.friends) ? friend.friends.map(String) : [];
                 return friendList.includes(String(userId));
