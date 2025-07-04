@@ -19,7 +19,7 @@ export default class UsersController {
 
       const hashedPassword = await Hash.make(password)
 
-      const user = await User.create({ username, email, photo, password: hashedPassword })
+      const user = await User.create({ username, email, password: hashedPassword })
 
       await Profile.create({ userId: user.id, username: username })
 
