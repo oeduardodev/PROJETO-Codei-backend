@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo, BelongsTo, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
 import Comment from './Comment'
 import User from './User'
+import Profile from './Profile'
 
 export default class Moment extends BaseModel {
   @hasMany(() => Comment)
@@ -9,7 +10,11 @@ export default class Moment extends BaseModel {
 
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>
-
+  @belongsTo(() => Profile, {
+    foreignKey: 'userId',
+  })
+  
+  public profile: BelongsTo<typeof Profile>;
   @column({ isPrimary: true })
   public id: number
 

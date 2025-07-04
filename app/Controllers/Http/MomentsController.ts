@@ -62,10 +62,22 @@ export default class MomentsController {
    * Retorna os detalhes de um momento específico
    */
   public async show({ params }: HttpContextContract) {
-    const moment = await Moment.query().where('id', params.id).preload('user').preload('comments').firstOrFail()
-
+    const moment = await Moment.query()
+    .where('id', params.id)
+    .preload('profile')
+    .preload('comments')
+    .firstOrFail()
+    
+    const serializedMoment = moment.serialize()
+    
     return {
-      data: moment,
+      data: {
+        ...serializedMoment,
+        profile: {
+          username: moment.profile?.username,
+          photo: moment.profile?.photo,
+        },
+      },
     }
   }
 
