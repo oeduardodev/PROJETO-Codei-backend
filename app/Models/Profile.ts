@@ -23,10 +23,10 @@ export default class Profile extends BaseModel {
 
   @column({
     serializeAs: 'friends',
-    prepare: (value: string[] | null) => JSON.stringify(value),
+    prepare: (value: number[] | null) => JSON.stringify(value),
     consume: (value: string) => (value ? JSON.parse(value) : []),
   })
-  public friends: string[]
+  public friends: number[];
 
   @column({
     serializeAs: 'levels',

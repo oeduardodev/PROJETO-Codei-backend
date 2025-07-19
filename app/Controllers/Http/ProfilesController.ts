@@ -155,27 +155,28 @@ export default class ProfileController {
     /*
      *  Adiciona amigo
      */
-    public async addFriend({ auth, params, response }: HttpContextContract) {
-        const { friendId } = params;
-        const userId = auth.user!.id;
+    public async addFriend({ auth, request, response }: HttpContextContract) {
+    const { friendId } = request.only(['friendId']);
+    const userId = auth.user!.id;
 
-        if (!userId) {
-            return response.unauthorized({ error: 'Usuário não autenticado' });
-        }
-
-        try {
-            const profile = await Profile.query().where('userId', userId).firstOrFail();
-
-            if (!profile.friends.includes(friendId)) {
-                profile.friends.push(friendId);
-                await profile.save();
-            }
-
-            return response.ok({ message: 'Convite enviado com sucesso', friends: profile.friends });
-        } catch (error) {
-            return response.badRequest({ error: 'Erro ao adicionar amigo', details: error.message });
-        }
+    if (!userId) {
+        return response.unauthorized({ error: 'Usuário não autenticado' });
     }
+
+    try {
+        const profile = await Profile.query().where('userId', userId).firstOrFail();
+
+        if (!profile.friends.includes(friendId)) {
+        profile.friends.push(friendId);
+        await profile.save();
+        }
+
+        return response.ok({ message: 'Convite enviado com sucesso', friends: profile.friends });
+    } catch (error) {
+        return response.badRequest({ error: 'Erro ao adicionar amigo', details: error.message });
+    }
+    }
+
 
     /*
      *  Remove amigo

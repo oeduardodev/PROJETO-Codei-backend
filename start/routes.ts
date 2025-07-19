@@ -48,8 +48,8 @@ Route.group(() => {
   // Rotas de Amigos (friends)
   Route.group(() => {
     Route.get('/', 'ProfilesController.listFriends').middleware('auth')
-    Route.post('/:friendId', 'ProfilesController.addFriend').middleware('auth')
-    Route.delete('/:friendId', 'ProfilesController.removeFriend').middleware('auth')
+    Route.post('/', 'ProfilesController.addFriend').middleware('auth')
+    Route.delete('/', 'ProfilesController.removeFriend').middleware('auth')
     Route.get('/:userId', 'ProfilesController.listFriendsByID')
   }).prefix('/friends')
 
