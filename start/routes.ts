@@ -23,6 +23,7 @@ Route.group(() => {
     Route.get('/', 'MomentsController.index')
     Route.post('/', 'MomentsController.store').middleware('auth')
     Route.get('/:id', 'MomentsController.show')
+    Route.delete('/:id', 'MomentsController.destroy').middleware('auth') 
     Route.post('/:id/comments', 'CommentsController.store')
     Route.get('/:id/comments', 'CommentsController.showByMomentId')
     Route.post('/:id/like', 'LikesController.like').middleware('auth')
@@ -49,7 +50,7 @@ Route.group(() => {
   Route.group(() => {
     Route.get('/', 'ProfilesController.listFriends').middleware('auth')
     Route.post('/', 'ProfilesController.addFriend').middleware('auth')
-    Route.delete('/', 'ProfilesController.removeFriend').middleware('auth')
+    Route.delete('/:friendId', 'ProfilesController.removeFriend').middleware('auth')
     Route.get('/:userId', 'ProfilesController.listFriendsByID')
   }).prefix('/friends')
 
