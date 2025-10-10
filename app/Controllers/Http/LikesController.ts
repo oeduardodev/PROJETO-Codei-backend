@@ -1,12 +1,10 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Like from 'App/Models/Like'
 import Moment from 'App/Models/Moment'
+import NotificationService from 'App/Services/NotificationService'
 
 export default class LikesController {
 
-  /*
-   * Adiciona ou remove um like em um momento específico
-   */
   public async like({ params, auth, response }: HttpContextContract) {
     try {
       if (!auth.user) {
@@ -17,7 +15,11 @@ export default class LikesController {
       const user = auth.user;
       const moment = await Moment.findOrFail(momentId);
   
-      const existingLike = await Like.query().where('user_id', user.id).where('moment_id', momentId).first();
+      const existingLike = await Like
+        .query()
+        .where('user_id', user.id)
+        .where('moment_id', momentId)
+        .first();
   
       if (existingLike) {
         await existingLike.delete();
@@ -28,6 +30,15 @@ export default class LikesController {
           momentId: momentId,
         });
         moment.likesCount += 1;
+
+        // Enviar notificação para o dono do momento (se não for o próprio autor curtindo)
+        if (moment.userId !== user.id) {
+          await NotificationService.send(moment.userId, 'like', {
+            momentId: moment.id,
+            likedBy: user.username,
+            likedById: user.id
+          });
+        }
       }
   
       await moment.save();
@@ -42,8 +53,6 @@ export default class LikesController {
       });
     }
   }
-  
-  
 
   /*
    * Verifica se o usuário já deu like em um momento específico
@@ -52,7 +61,7 @@ export default class LikesController {
     try {
       await auth.use('api').authenticate();
   
-      const momentId = params.id; // <- Corrigido aqui
+      const momentId = params.id;
       const user = auth.user!;
   
       const existingLike = await Like.query()

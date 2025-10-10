@@ -5,9 +5,9 @@ import Application from '@ioc:Adonis/Core/Application'
 import { v4 as uuidv4 } from 'uuid'
 import { uploadToCloudinary } from 'App/Services/CloudinaryService'
 import fs from 'fs'
+import NotificationService from 'App/Services/NotificationService'
 
 export default class MomentsController {
-
   private validationOptions = {
     types: ['image'],
     size: '1mb',
@@ -19,27 +19,38 @@ export default class MomentsController {
   public async store({ request, response, auth }: HttpContextContract) {
     const body = request.body()
     const image = request.file('image', this.validationOptions)
+    const user = auth.user!
 
     if (image) {
       const imageName = `${uuidv4()}.${image.extname}`
       const uploadFolder = Application.tmpPath('uploads')
       const imagePath = `${uploadFolder}/${imageName}`
 
-      // Move o arquivo para uma pasta temporária
       await image.move(uploadFolder, { name: imageName, overwrite: true })
 
-      // Faz upload para Cloudinary
       const uploadResult = await uploadToCloudinary(imagePath)
       body.image = (uploadResult as any).secure_url
 
-      // Remove o arquivo local temporário
       fs.unlinkSync(imagePath)
     }
 
-    const user = auth.user!
     body.user_id = user.id
 
     const moment = await Moment.create(body)
+
+    const Profile = (await import('App/Models/Profile')).default
+    const profile = await Profile.query().where('userId', user.id).first()
+
+    if (profile && Array.isArray(profile.friends) && profile.friends.length > 0) {
+      for (const friendId of profile.friends) {
+        await NotificationService.send(friendId, 'friend_post', {
+          momentId: moment.id,
+          postedById: user.id,
+          postedByUsername: profile.username,
+          message: `${profile.username} postou um novo momento!`,
+        })
+      }
+    }
 
     response.status(201)
     return {
@@ -63,13 +74,13 @@ export default class MomentsController {
    */
   public async show({ params }: HttpContextContract) {
     const moment = await Moment.query()
-    .where('id', params.id)
-    .preload('profile')
-    .preload('comments')
-    .firstOrFail()
-    
+      .where('id', params.id)
+      .preload('profile')
+      .preload('comments')
+      .firstOrFail()
+
     const serializedMoment = moment.serialize()
-    
+
     return {
       data: {
         ...serializedMoment,

@@ -54,4 +54,10 @@ Route.group(() => {
     Route.get('/:userId', 'ProfilesController.listFriendsByID')
   }).prefix('/friends')
 
+  // Rotas de Notificações (notifications)
+  Route.group(() => {
+    Route.get('/', 'NotificationsController.index').middleware('auth')
+    Route.post('/', 'NotificationsController.markAsRead').middleware('auth')
+  }).prefix('/notifications')
+
 }).prefix('/api') 

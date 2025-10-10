@@ -3,6 +3,7 @@ import Profile from 'App/Models/Profile'
 import { v4 as uuidv4 } from 'uuid'
 import { uploadToCloudinary } from 'App/Services/CloudinaryService'
 import fs from 'fs'
+import NotificationService from 'App/Services/NotificationService'
 // Removed unused Application import
 export default class ProfileController {
   /*
@@ -176,20 +177,24 @@ export default class ProfileController {
     }
 
     try {
-      const profile = await Profile.query().where('userId', userId).firstOrFail()
-      const current = Array.isArray(profile.friends) ? profile.friends : []
+      const myProfile = await Profile.query().where('userId', userId).firstOrFail()
+      const currentFriends = Array.isArray(myProfile.friends) ? myProfile.friends.map(Number) : []
 
-      // Garante consistência numérica
-      profile.friends = current.map((f) => Number(f))
-
-      if (!profile.friends.includes(normalizedFriendId)) {
-        profile.friends.push(normalizedFriendId)
-        await profile.save()
+      // Evita duplicar amizade
+      if (!currentFriends.includes(normalizedFriendId)) {
+        myProfile.friends.push(normalizedFriendId)
+        await myProfile.save()
       }
 
+      // Envia notificação para o usuário que está sendo adicionado
+      await NotificationService.send(normalizedFriendId, 'friend_request', {
+        fromUserId: myProfile.userId,
+        fromUsername: myProfile.username,
+      })
+
       return response.ok({
-        message: 'Convite enviado com sucesso',
-        friends: profile.friends,
+        message: 'Convite de amizade enviado com sucesso',
+        friends: myProfile.friends,
       })
     } catch (error) {
       return response.badRequest({
