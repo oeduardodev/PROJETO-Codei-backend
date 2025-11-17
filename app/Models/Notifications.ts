@@ -1,6 +1,5 @@
+import { afterFetch, afterFind, BaseModel, beforeSave, column } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
-import User from './User'
 
 export default class Notification extends BaseModel {
   @column({ isPrimary: true })
@@ -13,14 +12,48 @@ export default class Notification extends BaseModel {
   public type: string
 
   @column()
-  public data: object
+  public read: boolean
 
   @column()
-  public read: boolean
+  public title: string
+
+  @column()
+  public message: string
+
+  @column()
+  public data: any
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
-  @belongsTo(() => User)
-  public user: BelongsTo<typeof User>
+  @beforeSave()
+  public static stringifyData(notification: Notification) {
+    if (typeof notification.data === 'object') {
+      notification.data = JSON.stringify(notification.data)
+    }
+  }
+
+  @afterFetch()
+  public static parseFetchedData(notifications: Notification[]) {
+    notifications.forEach((n) => {
+      if (typeof n.data === 'string') {
+        try {
+          n.data = JSON.parse(n.data)
+        } catch {
+          n.data = {}
+        }
+      }
+    })
+  }
+
+  @afterFind()
+  public static parseSingleData(notification: Notification) {
+    if (typeof notification.data === 'string') {
+      try {
+        notification.data = JSON.parse(notification.data)
+      } catch {
+        notification.data = {}
+      }
+    }
+  }
 }

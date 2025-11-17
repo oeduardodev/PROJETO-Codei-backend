@@ -1,6 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Message from 'App/Models/Message'
-import NotificationService from 'App/Services/NotificationService'
 import Ws from 'App/Services/ws'
 
 export default class MessagesController {
@@ -18,14 +17,6 @@ export default class MessagesController {
 
     Ws.io.to(receiver.toString()).emit('newMessage', message)
     Ws.io.to(auth.user!.id.toString()).emit('newMessage', message)
-
-    // Enviar notificação para o dono do momento (se não for o próprio autor curtindo)
-
-    await NotificationService.send(receiver, 'message', {
-      senderId: auth.user!.id,
-      receiverId: receiver,
-      content,
-    })
 
     return message
   }

@@ -1,4 +1,3 @@
-// database/migrations/xxxx_notifications.ts
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class Notifications extends BaseSchema {
@@ -7,16 +6,14 @@ export default class Notifications extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table
-        .integer('user_id')
-        .unsigned()
-        .references('id')
-        .inTable('users')
-        .onDelete('CASCADE')
-      table.string('type').notNullable() 
-      table.json('data').notNullable()
+      table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
+      table.string('type').notNullable()
       table.boolean('read').defaultTo(false)
-      table.timestamp('created_at').defaultTo(this.now())
+      table.text('data').nullable()
+      table.string('title').nullable()
+      table.string('message').nullable()
+
+      table.timestamps(true, true)
     })
   }
 
