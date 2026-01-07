@@ -1,21 +1,19 @@
 import Route from '@ioc:Adonis/Core/Route'
 
 Route.get('/', async () => {
-  return { 
+  return {
     hello: 'world',
-    conected: process.env.DB_CONNECTION 
+    conected: process.env.DB_CONNECTION,
   }
 })
 
 Route.group(() => {
-
   // Rotas de Autorização (auth)
   Route.group(() => {
     Route.post('/login', 'UsersController.login')
     Route.post('/register', 'UsersController.register')
     Route.get('/user', 'UsersController.show').middleware('auth')
     Route.get('/user/:id', 'UsersController.showById')
-
   }).prefix('/auth')
 
   // Rotas de Momentos (Moments)
@@ -23,14 +21,14 @@ Route.group(() => {
     Route.get('/', 'MomentsController.index')
     Route.post('/', 'MomentsController.store').middleware('auth')
     Route.get('/:id', 'MomentsController.show')
-    Route.delete('/:id', 'MomentsController.destroy').middleware('auth') 
+    Route.delete('/:id', 'MomentsController.destroy').middleware('auth')
     Route.post('/:id/comments', 'CommentsController.store')
     Route.get('/:id/comments', 'CommentsController.showByMomentId')
     Route.post('/:id/like', 'LikesController.like').middleware('auth')
     Route.get('/:id/like', 'LikesController.checkLike').middleware('auth')
   }).prefix('/moments')
 
-  // Rotas de Perfil (Profile) 
+  // Rotas de Perfil (Profile)
   Route.group(() => {
     Route.post('/', 'ProfilesController.store').middleware('auth')
     Route.get('/me', 'ProfilesController.me').middleware('auth')
@@ -39,11 +37,12 @@ Route.group(() => {
     Route.delete('/:id', 'ProfilesController.destroy').middleware('auth')
   }).prefix('/profile')
 
-  // Rotas de Mensagens (message) 
+  // Rotas de Mensagens (message)
   Route.group(() => {
     Route.post('/send', 'MessagesController.sendMessages').middleware('auth')
     Route.get('/conversations', 'MessagesController.getMessages').middleware('auth')
     Route.get('/:id', 'MessagesController.getMessagesById').middleware('auth')
+    Route.post('/read/:id', 'MessagesController.markAsRead').middleware('auth')
   }).prefix('/message')
 
   // Rotas de Amigos (friends)
@@ -59,5 +58,4 @@ Route.group(() => {
     Route.get('/', 'NotificationsController.index').middleware('auth')
     Route.post('/', 'NotificationsController.markAsRead').middleware('auth')
   }).prefix('/notifications')
-
-}).prefix('/api') 
+}).prefix('/api')

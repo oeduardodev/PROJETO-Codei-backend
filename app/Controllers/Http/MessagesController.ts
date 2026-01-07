@@ -13,6 +13,7 @@ export default class MessagesController {
       senderId: auth.user!.id,
       receiverId: receiver,
       content,
+      read: false,
     })
 
     Ws.io.to(receiver.toString()).emit('newMessage', message)
@@ -50,5 +51,18 @@ export default class MessagesController {
       .orderBy('created_at', 'asc')
 
     return messages
+  }
+
+  public async markAsRead({ params, auth }: HttpContextContract) {
+    const currentUserId = auth.user!.id
+    const otherUserId = Number(params.id)
+
+    await Message.query()
+      .where('sender_id', otherUserId)
+      .andWhere('receiver_id', currentUserId)
+      .andWhere('read', false)
+      .update({ read: true })
+
+    return { success: true }
   }
 }

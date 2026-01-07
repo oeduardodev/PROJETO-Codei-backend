@@ -19,4 +19,22 @@ export default class NotificationsController {
 
     return { success: true, notification }
   }
+
+  public async clearNotification({ auth, request, response }) {
+    const { id } = request.only(['id'])
+
+    if (!id) {
+      return response.badRequest({ message: 'ID da notificação é obrigatório' })
+    }
+
+    const notification = await Notification.query()
+      .where('id', id)
+      .where('userId', auth.user!.id)
+      .firstOrFail()
+
+    notification.read = true
+    await notification.save()
+
+    return { success: true, notification }
+  }
 }

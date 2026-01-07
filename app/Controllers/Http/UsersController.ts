@@ -4,12 +4,16 @@ import Profile from 'App/Models/Profile'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class UsersController {
-
   /*
    * Registra um novo usuário no sistema
    */
   public async register({ request, response }: HttpContextContract) {
-    const { username, email, password, photo } = request.only(['username', 'email', 'password', 'photo']);
+    const { username, email, password, photo } = request.only([
+      'username',
+      'email',
+      'password',
+      'photo',
+    ])
 
     try {
       const existingUser = await User.findBy('email', email)
@@ -51,7 +55,7 @@ export default class UsersController {
       // Gerar token opaco
       const token = await auth.use('api').generate(user)
 
-      return response.ok({ message: 'Login bem-sucedido', token })
+      return response.ok({ message: 'Login bem-sucedido', token: token.token })
     } catch (error) {
       console.error('Falha no login:', error)
       return response.badRequest({ message: 'Falha no login', error })
@@ -63,17 +67,18 @@ export default class UsersController {
    */
   public async show({ auth, response }: HttpContextContract) {
     try {
+      await auth.use('api').authenticate()
+
       const user = auth.user
 
-      if (!user) {
-        console.log('Usuário não autenticado')
-        return response.unauthorized({ error: 'Usuário não autenticado' })
-      }
-
-      return response.ok(user)
+      return response.ok({
+        id: user?.id,
+        username: user?.username,
+        email: user?.email,
+      })
     } catch (error) {
-      console.error('Erro ao obter usuário:', error)
-      return response.internalServerError({ error: 'Erro ao obter usuário', details: error.message })
+      console.error('Erro ao buscar usuário:', error)
+      return response.unauthorized({ message: 'Token inválido ou expirado' })
     }
   }
 

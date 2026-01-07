@@ -15,6 +15,9 @@ export default class Message extends BaseModel {
   @column()
   public content: string
 
+  @column()
+  public read: boolean
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
