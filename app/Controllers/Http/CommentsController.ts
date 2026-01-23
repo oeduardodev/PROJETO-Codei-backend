@@ -3,14 +3,12 @@ import Comment from 'App/Models/Comment'
 import Moment from 'App/Models/Moment'
 
 export default class CommentsController {
-
   /*
    * Adiciona um comentário a um momento específico
    */
   public async store({ request, response, params }: HttpContextContract) {
-
     const body = request.body()
-    const momentId = params.momentId
+    const momentId = params.id
     const comment = await Comment.create(body)
     await Moment.findOrFail(momentId)
 
@@ -25,26 +23,26 @@ export default class CommentsController {
   }
 
   /*
-  * Lista todos os comentários de um momento específico
-  */
+   * Lista todos os comentários de um momento específico
+   */
   public async showByMomentId({ params, response }: HttpContextContract) {
-    const momentId = params.momentId;
+    const momentId = params.momentId
 
     try {
       const moment = await Moment.query()
         .where('id', momentId)
         .preload('comments', (commentQuery) => {
-          commentQuery.select('id', 'username', 'photo', 'text');
+          commentQuery.select('id', 'username', 'photo', 'text')
         })
-        .first();
+        .first()
 
       if (!moment) {
-        return response.notFound({ error: 'Momento não encontrado' });
+        return response.notFound({ error: 'Momento não encontrado' })
       }
 
-      return response.ok({ comments: moment.comments });
+      return response.ok({ comments: moment.comments })
     } catch (error) {
-      return response.badRequest({ error: 'Erro ao buscar comentários', details: error.message });
+      return response.badRequest({ error: 'Erro ao buscar comentários', details: error.message })
     }
   }
 }
