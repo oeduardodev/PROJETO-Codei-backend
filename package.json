@@ -10,6 +10,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "adonis-preset-ts": "^2.1.0",
     "@adonisjs/assembler": "^5.4.1",
     "@adonisjs/auth": "^5.1.1",
     "@adonisjs/core": "^5.4.2",
@@ -36,7 +37,6 @@
     "@types/minimatch": "^5.1.2",
     "@types/source-map-support": "^0.5.10",
     "@types/ws": "^8.5.14",
-    "adonis-preset-ts": "^2.1.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-adonis": "^2.1.0",
