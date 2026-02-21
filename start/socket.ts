@@ -1,4 +1,4 @@
-import Ws from 'App/Services/ws'
+import Ws from 'app/Services/ws'
 
 Ws.boot()
 
@@ -11,6 +11,5 @@ Ws.io.on('connection', (socket) => {
     socket.emit('resposta', `Servidor recebeu: ${data}`)
   })
 
-  socket.on('disconnect', () => {
-  })
+  socket.on('disconnect', () => {})
 })

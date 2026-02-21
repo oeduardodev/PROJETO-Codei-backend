@@ -1,6 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Message from 'App/Models/Message'
-import Ws from 'App/Services/ws'
+import Message from 'app/Models/Message'
+import Ws from 'app/Services/ws'
 
 export default class MessagesController {
   /*

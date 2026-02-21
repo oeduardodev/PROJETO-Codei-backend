@@ -1,9 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Profile from 'App/Models/Profile'
+import Profile from 'app/Models/Profile'
 import { v4 as uuidv4 } from 'uuid'
-import { uploadToCloudinary } from 'App/Services/CloudinaryService'
+import { uploadToCloudinary } from 'app/Services/CloudinaryService'
 import fs from 'fs'
-import NotificationService from 'App/Services/NotificationService'
+import NotificationService from 'app/Services/NotificationService'
 // Removed unused Application import
 export default class ProfileController {
   /*

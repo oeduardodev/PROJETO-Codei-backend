@@ -1,4 +1,4 @@
-import Notification from 'App/Models/Notifications'
+import Notification from 'app/Models/Notifications'
 import Ws from './ws'
 
 type NotificationType = 'like' | 'comment' | 'friend_request' | 'friend_post'

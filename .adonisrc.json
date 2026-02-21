@@ -6,24 +6,14 @@
     "@adonisjs/repl/build/commands",
     "@adonisjs/lucid/build/commands"
   ],
-  "exceptionHandlerNamespace": "App/Exceptions/Handler",
+  "exceptionHandlerNamespace": "app/Exceptions/Handler",
   "aliases": {
     "App": "app",
     "Config": "config",
     "Database": "database",
     "Contracts": "contracts"
   },
-  "preloads": [
-    "./start/routes",
-    "./start/kernel"
-  ],
-  "providers": [
-    "./providers/AppProvider",
-    "@adonisjs/core",
-    "@adonisjs/lucid",
-    "@adonisjs/auth"
-  ],
-  "aceProviders": [
-    "@adonisjs/repl"
-  ]
+  "preloads": ["./start/routes", "./start/kernel"],
+  "providers": ["./providers/AppProvider", "@adonisjs/core", "@adonisjs/lucid", "@adonisjs/auth"],
+  "aceProviders": ["@adonisjs/repl"]
 }

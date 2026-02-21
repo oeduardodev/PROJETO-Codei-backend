@@ -1,4 +1,4 @@
-import Notification from 'App/Models/Notifications'
+import Notification from 'app/Models/Notifications'
 
 export default class NotificationsController {
   // Listar todas as notificações do usuário autenticado
