@@ -53,18 +53,10 @@ const databaseConfig: DatabaseConfig = {
     */
     pg: {
       client: 'pg',
-      connection: {
-        host: Env.get('DB_HOST', 'localhost'),
-        port: Env.get('DB_PORT', 5432),
-        user: Env.get('DB_USER', 'your_db_user'),
-        password: Env.get('DB_PASSWORD', 'your_db_password'),
-        database: Env.get('DB_DATABASE', 'your_db_name'),
-      },
+      connection: Env.get('DATABASE_URL'),
       migrations: {
         paths: ['database/migrations'],
       },
-      healthCheck: false,
-      debug: false,
     },
   },
 }
