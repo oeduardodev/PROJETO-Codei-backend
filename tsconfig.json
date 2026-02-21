@@ -5,20 +5,32 @@
     "outDir": "build",
     "rootDir": ".",
     "strict": false,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": [
-      "@adonisjs/core",
-      "@adonisjs/repl",
-      "@adonisjs/lucid",
-      "@adonisjs/auth"
-    ]
+    "baseUrl": ".",
+    "paths": {
+      "App/*": [
+        "./app/*"
+      ],
+      "Config/*": [
+        "./config/*"
+      ],
+      "Contracts/*": [
+        "./contracts/*"
+      ],
+      "Database/*": [
+        "./database/*"
+      ],
+      "Start/*": [
+        "./start/*"
+      ]
+    }
   },
   "include": [
-    "**/*"
+    "./**/*.ts"
   ],
   "exclude": [
     "node_modules",
