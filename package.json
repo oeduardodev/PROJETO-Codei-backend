@@ -9,21 +9,8 @@
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write ."
   },
-  "devDependencies": {
-    "@types/source-map-support": "^0.5.10",
-    "@types/ws": "^8.5.14",
-    "adonis-preset-ts": "^2.1.0",
-    "eslint": "^8.7.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-adonis": "^2.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "pino-pretty": "^7.3.0",
-    "prettier": "^2.5.1",
-    "typescript": "^5.9.3",
-    "youch": "^3.1.0",
-    "youch-terminal": "^2.0.1"
-  },
   "dependencies": {
+    "typescript": "^5.9.3",
     "@adonisjs/assembler": "^5.4.1",
     "@adonisjs/auth": "^5.1.1",
     "@adonisjs/core": "^5.4.2",
@@ -44,5 +31,18 @@
     "sqlite3": "^5.0.2",
     "uuid": "^8.3.2",
     "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/source-map-support": "^0.5.10",
+    "@types/ws": "^8.5.14",
+    "adonis-preset-ts": "^2.1.0",
+    "eslint": "^8.7.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-adonis": "^2.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "pino-pretty": "^7.3.0",
+    "prettier": "^2.5.1",
+    "youch": "^3.1.0",
+    "youch-terminal": "^2.0.1"
   }
 }
