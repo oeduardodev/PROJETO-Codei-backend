@@ -10,7 +10,6 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "@adonisjs/assembler": "^5.4.1",
     "@types/source-map-support": "^0.5.10",
     "@types/ws": "^8.5.14",
     "adonis-preset-ts": "^2.1.0",
@@ -25,6 +24,7 @@
     "youch-terminal": "^2.0.1"
   },
   "dependencies": {
+    "@adonisjs/assembler": "^5.4.1",
     "@adonisjs/auth": "^5.1.1",
     "@adonisjs/core": "^5.4.2",
     "@adonisjs/hash": "^9.0.3",
