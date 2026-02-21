@@ -33,7 +33,7 @@ const databaseConfig: DatabaseConfig = {
         filename: Application.tmpPath('db.sqlite3'), // SQLite file location
       },
       migrations: {
-        paths: ['database/migrations'],
+        paths: [Application.databasePath('migrations')],
       },
       useNullAsDefault: true,
       healthCheck: false,
@@ -55,7 +55,7 @@ const databaseConfig: DatabaseConfig = {
       client: 'pg',
       connection: Env.get('DATABASE_URL'),
       migrations: {
-        paths: ['database/migrations'],
+        paths: [Application.databasePath('migrations')],
       },
     },
   },
