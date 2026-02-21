@@ -33,7 +33,7 @@ const databaseConfig: DatabaseConfig = {
         filename: Application.tmpPath('db.sqlite3'), // SQLite file location
       },
       migrations: {
-        naturalSort: true,
+        paths: ['database/migrations'],
       },
       useNullAsDefault: true,
       healthCheck: false,
@@ -61,7 +61,7 @@ const databaseConfig: DatabaseConfig = {
         database: Env.get('DB_DATABASE', 'your_db_name'),
       },
       migrations: {
-        naturalSort: true,
+        paths: ['database/migrations'],
       },
       healthCheck: false,
       debug: false,

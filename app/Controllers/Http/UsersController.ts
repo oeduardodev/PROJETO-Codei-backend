@@ -8,12 +8,7 @@ export default class UsersController {
    * Registra um novo usuário no sistema
    */
   public async register({ request, response }: HttpContextContract) {
-    const { username, email, password, photo } = request.only([
-      'username',
-      'email',
-      'password',
-      'photo',
-    ])
+    const { username, email, password } = request.only(['username', 'email', 'password'])
 
     try {
       const existingUser = await User.findBy('email', email)

@@ -52,10 +52,8 @@ export default class AuthMiddleware {
     customGuards: string[]
   ) {
     const guards = customGuards.length ? customGuards : [auth.name]
-    console.log('Guardas usados:', guards)
 
     await this.authenticate(auth, guards)
-    console.log('Solicitação autenticada com sucesso')
 
     await next()
   }
