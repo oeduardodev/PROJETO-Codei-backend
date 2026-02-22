@@ -23,10 +23,8 @@ const databaseConfig: DatabaseConfig = {
       client: 'pg',
       connection: {
         connectionString: Env.get('DATABASE_URL'),
-        ssl: {
-          rejectUnauthorized: false, // ESSA LINHA É OBRIGATÓRIA PARA O SUPABASE
-        },
-      } as any, // O 'as any' resolve o erro de tipagem que você recebeu
+        ssl: { rejectUnauthorized: false },
+      } as any,
       pool: {
         min: 2,
         max: 10,
