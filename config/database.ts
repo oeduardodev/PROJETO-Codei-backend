@@ -56,16 +56,12 @@ const databaseConfig: DatabaseConfig = {
     */
     pg: {
       client: 'pg',
-      connection: parsedDatabaseUrl
-        ? {
-            host: parsedDatabaseUrl.hostname,
-            port: Number(parsedDatabaseUrl.port || 5432),
-            user: decodeURIComponent(parsedDatabaseUrl.username),
-            password: decodeURIComponent(parsedDatabaseUrl.password),
-            database: parsedDatabaseUrl.pathname.replace(/^\//, ''),
-            ssl: { rejectUnauthorized: false },
-          }
-        : undefined,
+      // Passe a string inteira diretamente, o driver resolve o resto
+      connection: Env.get('DATABASE_URL'),
+      pool: {
+        min: 2,
+        max: 10,
+      },
       migrations: {
         paths: [Application.databasePath('migrations')],
       },
