@@ -3,24 +3,25 @@ import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id!: number
 
   @column()
-  public username: string
+  public username!: string
 
   @column()
-  public email: string
+  public email!: string
 
   @column()
-  public password: string
+  public password!: string
 
   @column({ columnName: 'admin' })
-  public isAdmin: boolean
+  public isAdmin!: boolean
 
   @column.dateTime({ autoCreate: true })
-  public createdAt: DateTime
+  public createdAt!: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updatedAt: DateTime
+  public updatedAt!: DateTime
   
 }
+

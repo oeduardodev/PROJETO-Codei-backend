@@ -12,9 +12,19 @@
 
 require('dns').setDefaultResultOrder('ipv4first')
 
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import 'reflect-metadata'
+import dotenv from 'dotenv'
 import sourceMapSupport from 'source-map-support'
 import { Ignitor } from '@adonisjs/core/build/standalone'
+
+const envPaths = [join(__dirname, '.env'), join(__dirname, '..', '.env')]
+const envPath = envPaths.find((path) => existsSync(path))
+
+if (envPath) {
+  dotenv.config({ path: envPath })
+}
 
 sourceMapSupport.install({ handleUncaughtExceptions: false })
 

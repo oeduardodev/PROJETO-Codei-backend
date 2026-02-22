@@ -3,38 +3,39 @@ import Moment from './Moment'
 
 export default class Profile extends BaseModel {
   @column({ isPrimary: true })
-  public userId: number
+  public userId!: number
   
   @column()
-  public username: string
+  public username!: string
 
   @column()
-  public photo: string
+  public photo!: string
 
   @column()
-  public bio: string
+  public bio!: string
 
   @column({
     serializeAs: 'technologies',
     prepare: (value: string[] | null) => JSON.stringify(value),
     consume: (value: string) => (value ? JSON.parse(value) : []),
   })
-  public technologies: string[]
+  public technologies!: string[]
 
   @column({
     serializeAs: 'friends',
     prepare: (value: number[] | null) => JSON.stringify(value),
     consume: (value: string) => (value ? JSON.parse(value) : []),
   })
-  public friends: number[];
+  public friends!: number[];
 
   @column({
     serializeAs: 'levels',
     prepare: (value: string[] | null) => JSON.stringify(value),
     consume: (value: string) => (value ? JSON.parse(value) : []),
   })
-  public levels: string[]
+  public levels!: string[]
 
   @hasMany(() => Moment, { foreignKey: 'userId' })
-  public moments: HasMany<typeof Moment>
+  public moments!: HasMany<typeof Moment>
 }
+

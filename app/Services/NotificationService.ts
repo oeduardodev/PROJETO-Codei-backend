@@ -3,13 +3,20 @@ import Ws from './ws'
 
 type NotificationType = 'like' | 'comment' | 'friend_request' | 'friend_post'
 
-export const messages = {
+type NotificationPayloadMap = {
+  like: { likedBy: string }
+  comment: { commentedBy: string }
+  friend_request: { fromUsername: string }
+  friend_post: { postedByUsername: string }
+}
+
+const messages: { [K in NotificationType]: (data: NotificationPayloadMap[K] & Record<string, unknown>) => { title: string; message: string } } = {
   like: (data) => ({
     title: 'Nova curtida!',
     message: `${data.likedBy} curtiu seu momento.`,
   }),
   comment: (data) => ({
-    title: 'Novo comentário!',
+    title: 'Novo coment�rio!',
     message: `${data.commentedBy} comentou no seu momento.`,
   }),
   friend_request: (data) => ({
@@ -20,15 +27,11 @@ export const messages = {
     title: 'Novo post de um amigo!',
     message: `${data.postedByUsername} acabou de postar um novo momento.`,
   }),
-  default: () => ({
-    title: 'Nova notificação',
-    message: 'Você recebeu uma nova atualização.',
-  }),
 }
 
 class NotificationService {
-  async send(userId: number, type: NotificationType, data: Record<string, any>) {
-    const { title, message } = (messages[type] || messages.default)(data)
+  async send<T extends NotificationType>(userId: number, type: T, data: NotificationPayloadMap[T] & Record<string, unknown>) {
+    const { title, message } = messages[type](data)
 
     const notification = await Notification.create({
       userId,
@@ -46,7 +49,7 @@ class NotificationService {
         message,
       })
     } catch (error) {
-      console.warn('Falha ao enviar notificação via WebSocket:', error)
+      console.warn('Falha ao enviar notifica��o via WebSocket:', error)
     }
 
     return notification
@@ -54,3 +57,4 @@ class NotificationService {
 }
 
 export default new NotificationService()
+

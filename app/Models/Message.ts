@@ -4,29 +4,30 @@ import User from './User'
 
 export default class Message extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id!: number
 
   @column()
-  public senderId: number
+  public senderId!: number
 
   @column()
-  public receiverId: number
+  public receiverId!: number
 
   @column()
-  public content: string
+  public content!: string
 
   @column()
-  public read: boolean
+  public read!: boolean
 
   @column.dateTime({ autoCreate: true })
-  public createdAt: DateTime
+  public createdAt!: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updatedAt: DateTime
+  public updatedAt!: DateTime
 
   @belongsTo(() => User, { foreignKey: 'senderId' })
-  public sender: BelongsTo<typeof User>
+  public sender!: BelongsTo<typeof User>
 
   @belongsTo(() => User, { foreignKey: 'receiverId' })
-  public receiver: BelongsTo<typeof User>
+  public receiver!: BelongsTo<typeof User>
 }
+

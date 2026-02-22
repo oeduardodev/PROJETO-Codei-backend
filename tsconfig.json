@@ -10,9 +10,20 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
+    "baseUrl": ".",
+    "paths": {
+      "app/*": [
+        "app/*"
+      ],
+      "App/*": [
+        "app/*"
+      ]
+    },
     "outDir": "build",
     "rootDir": ".",
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -27,3 +38,5 @@
     ]
   }
 }
+
+
