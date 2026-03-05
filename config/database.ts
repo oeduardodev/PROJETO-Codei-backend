@@ -2,17 +2,6 @@ import Env from '@ioc:Adonis/Core/Env'
 import Application from '@ioc:Adonis/Core/Application'
 import { DatabaseConfig } from '@ioc:Adonis/Lucid/Database'
 
-const rawDatabaseUrl = Env.get('DATABASE_URL')
-let parsedDatabaseUrl: URL | null = null
-
-if (rawDatabaseUrl) {
-  try {
-    parsedDatabaseUrl = new URL(String(rawDatabaseUrl))
-  } catch {
-    parsedDatabaseUrl = null
-  }
-}
-
 const databaseConfig: DatabaseConfig = {
   connection: Env.get('DB_CONNECTION', 'pg'), // Mudamos para 'pg' como padrão
 
