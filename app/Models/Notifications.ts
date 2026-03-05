@@ -3,28 +3,28 @@ import { DateTime } from 'luxon'
 
 export default class Notification extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id!: number
 
   @column()
-  public userId: number
+  public userId!: number
 
   @column()
-  public type: string
+  public type!: string
 
   @column()
-  public read: boolean
+  public read!: boolean
 
   @column()
-  public title: string
+  public title!: string
 
   @column()
-  public message: string
+  public message!: string
 
   @column()
-  public data: any
+  public data!: any
 
   @column.dateTime({ autoCreate: true })
-  public createdAt: DateTime
+  public createdAt!: DateTime
 
   @beforeSave()
   public static stringifyData(notification: Notification) {
@@ -57,3 +57,4 @@ export default class Notification extends BaseModel {
     }
   }
 }
+

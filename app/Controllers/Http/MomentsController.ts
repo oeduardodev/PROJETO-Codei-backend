@@ -1,11 +1,11 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Moment from 'App/Models/Moment'
+import Moment from 'app/Models/Moment'
 import Application from '@ioc:Adonis/Core/Application'
 
 import { v4 as uuidv4 } from 'uuid'
-import { uploadToCloudinary } from 'App/Services/CloudinaryService'
+import { uploadToCloudinary } from 'app/Services/CloudinaryService'
 import fs from 'fs'
-import NotificationService from 'App/Services/NotificationService'
+import NotificationService from 'app/Services/NotificationService'
 
 export default class MomentsController {
   private validationOptions = {
@@ -38,7 +38,7 @@ export default class MomentsController {
 
     const moment = await Moment.create(body)
 
-    const Profile = (await import('App/Models/Profile')).default
+    const Profile = (await import('app/Models/Profile')).default
     const profile = await Profile.query().where('userId', user.id).first()
 
     if (profile && Array.isArray(profile.friends) && profile.friends.length > 0) {

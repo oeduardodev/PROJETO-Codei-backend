@@ -1,6 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Comment from 'App/Models/Comment'
-import Moment from 'App/Models/Moment'
+import Comment from 'app/Models/Comment'
+import Moment from 'app/Models/Moment'
 
 export default class CommentsController {
   /*

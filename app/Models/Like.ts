@@ -3,21 +3,23 @@ import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class Like extends BaseModel {
   @column({ isPrimary: true })
-  public userId: number
+  public userId!: number
 
   @column()
-  public username: string
+  public username!: string
 
   @column()
-  public qt: number
+  public qt!: number
 
   @column()
-  public momentId: number
+  public momentId!: number
 
   @column.dateTime({ autoCreate: true })
-  public createdAt: DateTime
+  public createdAt!: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updatedAt: DateTime
-  total: number
+  public updatedAt!: DateTime
+  public total!: number
 }
+
+

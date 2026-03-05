@@ -2,7 +2,7 @@ import { Server } from 'socket.io'
 import AdonisServer from '@ioc:Adonis/Core/Server' 
 
 class Ws {
-  public io: Server
+  public io!: Server
   private booted = false 
 
   public boot() {
