@@ -17,7 +17,7 @@ export default class MomentsController {
    * Cria um novo momento e salva no banco de dados
    */
   public async store({ request, response, auth }: HttpContextContract) {
-    const body = request.body()
+    const body = request.only(['title', 'description']) as any
     const image = request.file('image', this.validationOptions)
     const user = auth.user!
 
@@ -34,9 +34,14 @@ export default class MomentsController {
       fs.unlinkSync(imagePath)
     }
 
-    body.user_id = user.id
+    const momentPayload = {
+      title: body.title,
+      description: body.description,
+      image: body.image,
+      userId: user.id,
+    }
 
-    const moment = await Moment.create(body)
+    const moment = await Moment.create(momentPayload)
 
     const Profile = (await import('app/Models/Profile')).default
     const profile = await Profile.query().where('userId', user.id).first()
