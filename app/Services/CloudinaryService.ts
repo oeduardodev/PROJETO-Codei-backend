@@ -59,12 +59,12 @@ function resolveCredentials(): ResolvedCloudinaryCredentials {
   }
   const urlCredentials = parseCloudinaryUrl(Env.get('CLOUDINARY_URL', ''))
 
-  if (hasCompleteCredentials(envCredentials)) {
-    return { ...envCredentials, source: 'CLOUDINARY_*' }
-  }
-
   if (hasCompleteCredentials(urlCredentials)) {
     return { ...urlCredentials, source: 'CLOUDINARY_URL' }
+  }
+
+  if (hasCompleteCredentials(envCredentials)) {
+    return { ...envCredentials, source: 'CLOUDINARY_*' }
   }
 
   if (!hasCompleteCredentials(envCredentials) && !hasCompleteCredentials(urlCredentials)) {
