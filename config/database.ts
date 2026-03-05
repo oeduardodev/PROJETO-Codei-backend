@@ -2,6 +2,19 @@ import Env from '@ioc:Adonis/Core/Env'
 import Application from '@ioc:Adonis/Core/Application'
 import { DatabaseConfig } from '@ioc:Adonis/Lucid/Database'
 
+const dbSsl = Env.get('DB_SSL', false)
+const shouldUseSsl = typeof dbSsl === 'boolean' ? dbSsl : String(dbSsl).toLowerCase() === 'true'
+const rawDatabaseUrl = Env.get('DATABASE_URL')
+let parsedDatabaseUrl: URL | null = null
+
+if (rawDatabaseUrl) {
+  try {
+    parsedDatabaseUrl = new URL(String(rawDatabaseUrl))
+  } catch {
+    parsedDatabaseUrl = null
+  }
+}
+
 const databaseConfig: DatabaseConfig = {
   /*
   |---------------------------------------------------------------------------
@@ -32,9 +45,7 @@ const databaseConfig: DatabaseConfig = {
       connection: {
         filename: Application.tmpPath('db.sqlite3'), // SQLite file location
       },
-      migrations: {
-        naturalSort: true,
-      },
+      migrations: {},
       useNullAsDefault: true,
       healthCheck: false,
       debug: false,
@@ -54,14 +65,16 @@ const databaseConfig: DatabaseConfig = {
     pg: {
       client: 'pg',
       connection: {
-        host: Env.get('DB_HOST', 'localhost'),
-        port: Env.get('DB_PORT', 5432),
-        user: Env.get('DB_USER', 'your_db_user'),
-        password: Env.get('DB_PASSWORD', 'your_db_password'),
-        database: Env.get('DB_DATABASE', 'your_db_name'),
-      },
-      migrations: {
-        naturalSort: true,
+        host: Env.get('DB_HOST', parsedDatabaseUrl?.hostname),
+        port: Env.get('DB_PORT', parsedDatabaseUrl?.port ? Number(parsedDatabaseUrl.port) : undefined),
+        user: Env.get('DB_USER', parsedDatabaseUrl?.username),
+        password: Env.get('DB_PASSWORD', parsedDatabaseUrl?.password),
+        database: Env.get('DB_DATABASE', parsedDatabaseUrl?.pathname.replace('/', '')),
+        ssl: shouldUseSsl
+          ? {
+              rejectUnauthorized: false,
+            }
+          : false,
       },
       healthCheck: false,
       debug: false,
