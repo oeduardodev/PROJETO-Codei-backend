@@ -7,7 +7,14 @@ type CloudinaryCredentials = {
   apiSecret: string
 }
 
+type CredentialSource = 'CLOUDINARY_*' | 'CLOUDINARY_URL'
+
+type ResolvedCloudinaryCredentials = CloudinaryCredentials & {
+  source: CredentialSource
+}
+
 let isConfigured = false
+let configuredCredentialSummary = ''
 
 function normalizeEnvValue(value: string): string {
   const trimmedValue = value.trim()
@@ -40,28 +47,47 @@ function parseCloudinaryUrl(cloudinaryUrl: string): Partial<CloudinaryCredential
   }
 }
 
-function resolveCredentials(): CloudinaryCredentials {
-  const credentialsFromUrl = parseCloudinaryUrl(Env.get('CLOUDINARY_URL', ''))
+function hasCompleteCredentials(credentials: Partial<CloudinaryCredentials>): credentials is CloudinaryCredentials {
+  return Boolean(credentials.cloudName && credentials.apiKey && credentials.apiSecret)
+}
 
-  const cloudName =
-    credentialsFromUrl.cloudName || normalizeEnvValue(Env.get('CLOUDINARY_CLOUD_NAME', ''))
-  const apiKey = credentialsFromUrl.apiKey || normalizeEnvValue(Env.get('CLOUDINARY_API_KEY', ''))
-  const apiSecret =
-    credentialsFromUrl.apiSecret || normalizeEnvValue(Env.get('CLOUDINARY_API_SECRET', ''))
+function resolveCredentials(): ResolvedCloudinaryCredentials {
+  const envCredentials = {
+    cloudName: normalizeEnvValue(Env.get('CLOUDINARY_CLOUD_NAME', '')),
+    apiKey: normalizeEnvValue(Env.get('CLOUDINARY_API_KEY', '')),
+    apiSecret: normalizeEnvValue(Env.get('CLOUDINARY_API_SECRET', '')),
+  }
+  const urlCredentials = parseCloudinaryUrl(Env.get('CLOUDINARY_URL', ''))
 
-  if (!cloudName || !apiKey || !apiSecret) {
+  if (hasCompleteCredentials(envCredentials)) {
+    return { ...envCredentials, source: 'CLOUDINARY_*' }
+  }
+
+  if (hasCompleteCredentials(urlCredentials)) {
+    return { ...urlCredentials, source: 'CLOUDINARY_URL' }
+  }
+
+  if (!hasCompleteCredentials(envCredentials) && !hasCompleteCredentials(urlCredentials)) {
     throw new Error(
       'Cloudinary credentials missing. Configure CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY + CLOUDINARY_API_SECRET.'
     )
   }
 
-  return { cloudName, apiKey, apiSecret }
+  throw new Error(
+    'Cloudinary credentials incomplete. Define all CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET values or a full CLOUDINARY_URL.'
+  )
+}
+
+function summarizeCredentials(credentials: ResolvedCloudinaryCredentials): string {
+  const keySuffix = credentials.apiKey.slice(-4)
+  return `source=${credentials.source}; cloud_name=${credentials.cloudName}; api_key_suffix=${keySuffix}`
 }
 
 function configureCloudinary() {
   if (isConfigured) return
 
   const credentials = resolveCredentials()
+  configuredCredentialSummary = summarizeCredentials(credentials)
 
   cloudinary.config({
     cloud_name: credentials.cloudName,
@@ -80,7 +106,7 @@ export async function uploadToCloudinary(filePath: string) {
   } catch (error: any) {
     if (typeof error?.message === 'string' && error.message.includes('Invalid Signature')) {
       throw new Error(
-        'Cloudinary Invalid Signature. Validate CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET from the same account.'
+        `Cloudinary Invalid Signature. ${configuredCredentialSummary}. Validate that cloud_name/api_key/api_secret belong to the same Cloudinary environment.`
       )
     }
 
