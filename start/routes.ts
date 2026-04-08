@@ -32,6 +32,7 @@ Route.group(() => {
   Route.group(() => {
     Route.post('/', 'ProfilesController.store').middleware('auth')
     Route.get('/me', 'ProfilesController.me').middleware('auth')
+    Route.get('/search', 'ProfilesController.search')
     Route.get('/:id', 'ProfilesController.show')
     Route.put('/:id', 'ProfilesController.update').middleware('auth')
     Route.delete('/:id', 'ProfilesController.destroy').middleware('auth')

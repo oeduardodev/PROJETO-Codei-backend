@@ -4,8 +4,36 @@ import { v4 as uuidv4 } from 'uuid'
 import { uploadToCloudinary } from 'app/Services/CloudinaryService'
 import fs from 'fs'
 import NotificationService from 'app/Services/NotificationService'
-// Removed unused Application import
+
 export default class ProfileController {
+  public async search({ request, response }: HttpContextContract) {
+    const term = String(request.input('term', '')).trim().toLowerCase()
+
+    if (!term) {
+      return response.ok({ profiles: [] })
+    }
+
+    try {
+      const likeTerm = `%${term}%`
+
+      const profiles = await Profile.query()
+        .where((query) => {
+          query
+            .whereRaw('LOWER(username) LIKE ?', [likeTerm])
+            .orWhereRaw('LOWER(bio) LIKE ?', [likeTerm])
+            .orWhereRaw('LOWER(technologies) LIKE ?', [likeTerm])
+        })
+        .limit(20)
+
+      return response.ok({ profiles })
+    } catch (error) {
+      return response.badRequest({
+        error: 'Erro ao buscar perfis',
+        details: error.message,
+      })
+    }
+  }
+
   /*
    *  Obtém o perfil do usuário autenticado e logado
    */

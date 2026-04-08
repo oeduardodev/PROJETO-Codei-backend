@@ -35,7 +35,8 @@
       "@adonisjs/auth",
       "@adonisjs/repl",
       "minimatch"
-    ]
+    ],
+    "ignoreDeprecations": "6.0"
   }
 }
 
