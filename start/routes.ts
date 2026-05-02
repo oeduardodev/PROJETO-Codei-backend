@@ -12,6 +12,8 @@ Route.group(() => {
   Route.group(() => {
     Route.post('/login', 'UsersController.login')
     Route.post('/register', 'UsersController.register')
+      Route.get('/google', 'GoogleAuthController.redirect')
+      Route.get('/google/callback', 'GoogleAuthController.callback')
     Route.get('/user', 'UsersController.show').middleware('auth')
     Route.get('/user/:id', 'UsersController.showById')
   }).prefix('/auth')

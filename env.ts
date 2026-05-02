@@ -25,4 +25,8 @@ export default Env.rules({
   CLOUDINARY_API_KEY: Env.schema.string.optional(),
   CLOUDINARY_API_SECRET: Env.schema.string.optional(),
   CLOUDINARY_URL: Env.schema.string.optional(),
+  GOOGLE_CLIENT_ID: Env.schema.string.optional(),
+  GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
+  GOOGLE_REDIRECT_URI: Env.schema.string.optional(),
+  FRONTEND_URL: Env.schema.string.optional(),
 })
