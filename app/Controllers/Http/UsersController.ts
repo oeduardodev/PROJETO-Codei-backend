@@ -4,6 +4,20 @@ import Profile from 'app/Models/Profile'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class UsersController {
+  private publicUser(user: User) {
+    return {
+      id: user.id,
+      username: user.username,
+    }
+  }
+
+  private privateUser(user: User) {
+    return {
+      ...this.publicUser(user),
+      email: user.email,
+    }
+  }
+
   /*
    * Registra um novo usuário no sistema
    */
@@ -22,10 +36,10 @@ export default class UsersController {
 
       await Profile.create({ userId: user.id, username: username })
 
-      return response.created(user)
+      return response.created({ user: this.privateUser(user) })
     } catch (error) {
       console.error('Erro ao registrar conta:', error)
-      return response.badRequest({ message: 'Erro em registrar conta', error })
+      return response.badRequest({ message: 'Erro em registrar conta' })
     }
   }
 
@@ -53,7 +67,7 @@ export default class UsersController {
       return response.ok({ message: 'Login bem-sucedido', token: token.token })
     } catch (error) {
       console.error('Falha no login:', error)
-      return response.badRequest({ message: 'Falha no login', error })
+      return response.badRequest({ message: 'Falha no login' })
     }
   }
 
@@ -66,11 +80,9 @@ export default class UsersController {
 
       const user = auth.user
 
-      return response.ok({
-        id: user?.id,
-        username: user?.username,
-        email: user?.email,
-      })
+      return user
+        ? response.ok(this.privateUser(user))
+        : response.unauthorized({ message: 'Usuario nao autenticado' })
     } catch (error) {
       console.error('Erro ao buscar usuário:', error)
       return response.unauthorized({ message: 'Token inválido ou expirado' })
@@ -86,7 +98,7 @@ export default class UsersController {
 
       const user = await User.findOrFail(userId)
 
-      return response.ok(user)
+      return response.ok(this.publicUser(user))
     } catch (error) {
       console.error('Erro ao buscar usuário por ID:', error)
       return response.notFound({ error: 'Usuário não encontrado' })

@@ -2,6 +2,8 @@ import Env from '@ioc:Adonis/Core/Env'
 import Application from '@ioc:Adonis/Core/Application'
 import { DatabaseConfig } from '@ioc:Adonis/Lucid/Database'
 
+const pgSslRejectUnauthorized = Env.get('DB_SSL_REJECT_UNAUTHORIZED', true)
+
 const databaseConfig: DatabaseConfig = {
   connection: Env.get('DB_CONNECTION', 'pg'), // Mudamos para 'pg' como padrão
 
@@ -23,7 +25,10 @@ const databaseConfig: DatabaseConfig = {
       client: 'pg',
       connection: {
         connectionString: Env.get('DATABASE_URL'),
-        ssl: { rejectUnauthorized: false },
+        ssl:
+          Env.get('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: pgSslRejectUnauthorized }
+            : false,
       } as any,
       pool: {
         min: 2,

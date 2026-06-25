@@ -1,30 +1,16 @@
+import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Notification from 'app/Models/Notifications'
 
 export default class NotificationsController {
-  // Listar todas as notificações do usuário autenticado
-  public async index({ auth }) {
+  public async index({ auth }: HttpContextContract) {
     return Notification.query().where('userId', auth.user!.id).orderBy('createdAt', 'desc')
   }
 
-  public async markAsRead({ auth, request }) {
-    const { id } = request.only(['id'])
+  public async markAsRead({ auth, request, response }: HttpContextContract) {
+    const id = Number(request.input('id'))
 
-    const notification = await Notification.query()
-      .where('id', id)
-      .where('userId', auth.user!.id)
-      .firstOrFail()
-
-    notification.read = true
-    await notification.save()
-
-    return { success: true, notification }
-  }
-
-  public async clearNotification({ auth, request, response }) {
-    const { id } = request.only(['id'])
-
-    if (!id) {
-      return response.badRequest({ message: 'ID da notificação é obrigatório' })
+    if (!id || Number.isNaN(id)) {
+      return response.badRequest({ message: 'ID da notificacao e obrigatorio' })
     }
 
     const notification = await Notification.query()
@@ -36,5 +22,9 @@ export default class NotificationsController {
     await notification.save()
 
     return { success: true, notification }
+  }
+
+  public async clearNotification({ auth, request, response }: HttpContextContract) {
+    return this.markAsRead({ auth, request, response } as HttpContextContract)
   }
 }

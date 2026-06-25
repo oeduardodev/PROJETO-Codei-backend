@@ -4,60 +4,50 @@ import Moment from 'app/Models/Moment'
 import Profile from 'app/Models/Profile'
 
 export default class CommentsController {
-  /*
-   * Adiciona um comentário a um momento específico
-   */
   public async store({ request, response, params, auth }: HttpContextContract) {
-    const body = request.only(['username', 'text', 'photo'])
+    const text = String(request.input('text', '')).trim()
     const momentId = params.id
-    await Moment.findOrFail(momentId)
 
-    let profile: Profile | null = null
-
-    try {
-      await auth.use('api').authenticate()
-      profile = await Profile.query().where('userId', auth.user!.id).first()
-    } catch {
-      if (body.username) {
-        profile = await Profile.query().where('username', body.username).first()
-      }
+    if (!text) {
+      return response.badRequest({ error: 'Comentario vazio' })
     }
 
+    await Moment.findOrFail(momentId)
+    await auth.use('api').authenticate()
+
+    const profile: Profile | null = await Profile.query().where('userId', auth.user!.id).first()
+
     const comment = await Comment.create({
-      ...body,
-      photo: body.photo ?? profile?.photo ?? null,
+      username: profile?.username ?? auth.user!.username,
+      text,
+      photo: profile?.photo || '',
       momentId,
     })
 
     response.status(201)
 
     return {
-      message: 'Comentário adicionado com sucesso!',
+      message: 'Comentario adicionado com sucesso!',
       data: comment,
     }
   }
 
-  /*
-   * Lista todos os comentários de um momento específico
-   */
   public async showByMomentId({ params, response }: HttpContextContract) {
-    const momentId = params.id
-
     try {
       const moment = await Moment.query()
-        .where('id', momentId)
+        .where('id', params.id)
         .preload('comments', (commentQuery) => {
           commentQuery.select('id', 'username', 'photo', 'text')
         })
         .first()
 
       if (!moment) {
-        return response.notFound({ error: 'Momento não encontrado' })
+        return response.notFound({ error: 'Momento nao encontrado' })
       }
 
       return response.ok({ comments: moment.comments })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao buscar comentários', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao buscar comentarios' })
     }
   }
 }

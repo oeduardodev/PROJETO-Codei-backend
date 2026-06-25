@@ -6,6 +6,20 @@
  */
 
 import { CorsConfig } from '@ioc:Adonis/Core/Cors'
+import Env from '@ioc:Adonis/Core/Env'
+
+function getAllowedOrigins() {
+  const configuredOrigins = Env.get('ALLOWED_ORIGINS', '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  const frontendUrl = Env.get('FRONTEND_URL', '').trim()
+
+  return Array.from(new Set([...configuredOrigins, frontendUrl, 'http://localhost:4200']))
+}
+
+const allowedOrigins = getAllowedOrigins()
 
 const corsConfig: CorsConfig = {
   /*
@@ -44,7 +58,13 @@ const corsConfig: CorsConfig = {
   |                     one of the above values.
   |
   */
-  origin: true,
+  origin: (origin) => {
+    if (!origin) {
+      return true
+    }
+
+    return allowedOrigins.includes(origin) ? origin : false
+  },
 
   /*
   |--------------------------------------------------------------------------
@@ -75,7 +95,7 @@ const corsConfig: CorsConfig = {
   | Function          - Receives the current header and should return one of the above values.
   |
   */
-  headers: true,
+  headers: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
 
   /*
   |--------------------------------------------------------------------------

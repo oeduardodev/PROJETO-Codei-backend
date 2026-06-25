@@ -6,12 +6,17 @@ import NotificationService from 'app/Services/NotificationService'
 export default class LikesController {
   public async like({ params, auth, response }: HttpContextContract) {
     try {
-      if (!auth.user) {
-        return response.unauthorized({ message: 'Usuário não autenticado' })
+      const momentId = Number(params.id)
+      const user = auth.user
+
+      if (!user) {
+        return response.unauthorized({ message: 'Usuario nao autenticado' })
       }
 
-      const momentId = params.id
-      const user = auth.user
+      if (!momentId || Number.isNaN(momentId)) {
+        return response.badRequest({ error: 'Momento invalido' })
+      }
+
       const moment = await Moment.findOrFail(momentId)
 
       const existingLike = await Like.query()
@@ -21,15 +26,14 @@ export default class LikesController {
 
       if (existingLike) {
         await existingLike.delete()
-        moment.likesCount -= 1
+        moment.likesCount = Math.max(0, moment.likesCount - 1)
       } else {
         await Like.create({
           userId: user.id,
-          momentId: momentId,
+          momentId,
         })
         moment.likesCount += 1
 
-        // Enviar notificação para o dono do momento (se não for o próprio autor curtindo)
         if (moment.userId !== user.id) {
           await NotificationService.send(moment.userId, 'like', {
             momentId: moment.id,
@@ -40,26 +44,23 @@ export default class LikesController {
       }
 
       await moment.save()
-      return response.ok({ message: 'Operação de like/deslike realizada com sucesso' })
+      return response.ok({ message: 'Operacao de like/deslike realizada com sucesso' })
     } catch (error) {
-      console.error(error)
-      return response.internalServerError({
-        message: 'Erro ao processar like',
-        error: error.message,
-        stack: error.stack,
-      })
+      console.error('Erro ao processar like:', error)
+      return response.internalServerError({ message: 'Erro ao processar like' })
     }
   }
 
-  /*
-   * Verifica se o usuário já deu like em um momento específico
-   */
   public async checkLike({ params, auth, response }: HttpContextContract) {
     try {
       await auth.use('api').authenticate()
 
-      const momentId = params.id
+      const momentId = Number(params.id)
       const user = auth.user!
+
+      if (!momentId || Number.isNaN(momentId)) {
+        return response.badRequest({ error: 'Momento invalido' })
+      }
 
       const existingLike = await Like.query()
         .where('user_id', user.id)
@@ -69,10 +70,7 @@ export default class LikesController {
       return response.ok({ liked: !!existingLike })
     } catch (error) {
       console.error('Erro ao verificar like:', error)
-      return response.internalServerError({
-        message: 'Erro ao verificar like',
-        error: error.message || error,
-      })
+      return response.internalServerError({ message: 'Erro ao verificar like' })
     }
   }
 }

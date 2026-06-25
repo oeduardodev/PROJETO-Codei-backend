@@ -10,7 +10,6 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "adonis-preset-ts": "^2.1.0",
     "@adonisjs/assembler": "^5.4.1",
     "@adonisjs/auth": "^5.1.1",
     "@adonisjs/core": "^5.4.2",
@@ -19,8 +18,9 @@
     "@adonisjs/repl": "^3.1.8",
     "@adonisjs/session": "^4.0.6",
     "@adonisjs/websocket": "^1.0.12",
-    "cloudinary": "^2.6.1",
+    "adonis-preset-ts": "^2.1.0",
     "axios": "^1.5.0",
+    "cloudinary": "^2.6.1",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^2.3.0",
     "pg": "^8.13.1",
@@ -29,9 +29,7 @@
     "reflect-metadata": "^0.1.13",
     "socket.io": "^4.8.1",
     "source-map-support": "^0.5.21",
-    "sqlite3": "^5.0.2",
     "typescript": "^5.9.3",
-    "uuid": "^8.3.2",
     "ws": "^8.18.1"
   },
   "devDependencies": {
@@ -44,6 +42,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "pino-pretty": "^7.3.0",
     "prettier": "^2.5.1",
+    "sqlite3": "^6.0.1",
     "youch": "^3.1.0",
     "youch-terminal": "^2.0.1"
   }

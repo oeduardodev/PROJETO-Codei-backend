@@ -1,23 +1,43 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Message from 'app/Models/Message'
+import User from 'app/Models/User'
 import Ws from 'app/Services/ws'
 
 export default class MessagesController {
   /*
    * Envia uma nova mensagem para um usuário específico.
    */
-  public async sendMessages({ request, auth }: HttpContextContract) {
+  public async sendMessages({ request, auth, response }: HttpContextContract) {
     const { receiver, content } = request.only(['receiver', 'content'])
+    const receiverId = Number(receiver)
+    const trimmedContent = String(content ?? '').trim()
+
+    if (!receiverId || Number.isNaN(receiverId)) {
+      return response.badRequest({ error: 'Destinatario invalido' })
+    }
+
+    if (!trimmedContent) {
+      return response.badRequest({ error: 'Mensagem vazia' })
+    }
+
+    if (receiverId === auth.user!.id) {
+      return response.badRequest({ error: 'Nao e possivel enviar mensagem para voce mesmo' })
+    }
+
+    const receiverUser = await User.find(receiverId)
+    if (!receiverUser) {
+      return response.notFound({ error: 'Destinatario nao encontrado' })
+    }
 
     const message = await Message.create({
       senderId: auth.user!.id,
-      receiverId: receiver,
-      content,
+      receiverId,
+      content: trimmedContent,
       read: false,
     })
 
-    Ws.io.to(receiver.toString()).emit('newMessage', message)
-    Ws.io.to(auth.user!.id.toString()).emit('newMessage', message)
+    Ws.io.to(`user:${receiverId}`).emit('newMessage', message)
+    Ws.io.to(`user:${auth.user!.id}`).emit('newMessage', message)
 
     return message
   }
@@ -35,9 +55,13 @@ export default class MessagesController {
     return messages
   }
 
-  public async getMessagesById({ params, auth }) {
-    const currentUserId = auth.user?.id
+  public async getMessagesById({ params, auth, response }: HttpContextContract) {
+    const currentUserId = auth.user!.id
     const otherUserId = Number(params.id)
+
+    if (!otherUserId || Number.isNaN(otherUserId)) {
+      return response.badRequest({ error: 'Usuario invalido' })
+    }
 
     const messages = await Message.query()
       .where((query) => {
@@ -53,9 +77,13 @@ export default class MessagesController {
     return messages
   }
 
-  public async markAsRead({ params, auth }: HttpContextContract) {
+  public async markAsRead({ params, auth, response }: HttpContextContract) {
     const currentUserId = auth.user!.id
     const otherUserId = Number(params.id)
+
+    if (!otherUserId || Number.isNaN(otherUserId)) {
+      return response.badRequest({ error: 'Usuario invalido' })
+    }
 
     await Message.query()
       .where('sender_id', otherUserId)

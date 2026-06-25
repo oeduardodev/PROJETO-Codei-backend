@@ -20,6 +20,8 @@ export default Env.rules({
   APP_KEY: Env.schema.string(),
   APP_NAME: Env.schema.string(),
   DRIVE_DISK: Env.schema.enum(['local'] as const),
+  DB_CONNECTION: Env.schema.enum(['sqlite', 'pg'] as const),
+  DATABASE_URL: Env.schema.string.optional(),
   NODE_ENV: Env.schema.enum(['development', 'production', 'testing'] as const),
   CLOUDINARY_CLOUD_NAME: Env.schema.string.optional(),
   CLOUDINARY_API_KEY: Env.schema.string.optional(),
@@ -29,4 +31,6 @@ export default Env.rules({
   GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
   GOOGLE_REDIRECT_URI: Env.schema.string.optional(),
   FRONTEND_URL: Env.schema.string.optional(),
+  ALLOWED_ORIGINS: Env.schema.string.optional(),
+  DB_SSL_REJECT_UNAUTHORIZED: Env.schema.boolean.optional(),
 })

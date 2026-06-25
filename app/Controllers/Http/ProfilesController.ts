@@ -1,16 +1,39 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Application from '@ioc:Adonis/Core/Application'
 import Profile from 'app/Models/Profile'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { uploadToCloudinary } from 'app/Services/CloudinaryService'
 import fs from 'fs'
 import NotificationService from 'app/Services/NotificationService'
 
 export default class ProfileController {
+  private imageValidationOptions = {
+    types: ['image'],
+    size: '1mb',
+  }
+
+  private parseArrayField(field: unknown) {
+    if (typeof field === 'string') {
+      try {
+        const parsed = JSON.parse(field)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+
+    return Array.isArray(field) ? field : []
+  }
+
   public async search({ request, response }: HttpContextContract) {
     const term = String(request.input('term', '')).trim().toLowerCase()
 
     if (!term) {
       return response.ok({ profiles: [] })
+    }
+
+    if (term.length > 60) {
+      return response.badRequest({ error: 'Termo de busca muito longo' })
     }
 
     try {
@@ -26,24 +49,14 @@ export default class ProfileController {
         .limit(20)
 
       return response.ok({ profiles })
-    } catch (error) {
-      return response.badRequest({
-        error: 'Erro ao buscar perfis',
-        details: error.message,
-      })
+    } catch {
+      return response.badRequest({ error: 'Erro ao buscar perfis' })
     }
   }
 
-  /*
-   *  Obtém o perfil do usuário autenticado e logado
-   */
   public async me({ auth, response }: HttpContextContract) {
     try {
       const userId = auth.user!.id
-
-      if (!userId) {
-        return response.unauthorized({ error: 'Usuário não autenticado' })
-      }
 
       let profile = await Profile.query().where('userId', userId).preload('moments').first()
 
@@ -60,90 +73,71 @@ export default class ProfileController {
       }
 
       return response.ok({ profile })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao obter ou criar perfil', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao obter ou criar perfil' })
     }
   }
 
-  /*
-   *  Lista todos os perfis
-   */
   public async show({ params, response }: HttpContextContract) {
-    const userId = params.id
-
     try {
-      const profile = await Profile.query().where('userId', userId).preload('moments').first()
+      const profile = await Profile.query().where('userId', params.id).preload('moments').first()
 
       if (!profile) {
-        return response.notFound({ error: 'Perfil não encontrado' })
+        return response.notFound({ error: 'Perfil nao encontrado' })
       }
 
       return response.ok({ profile })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao buscar perfil', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao buscar perfil' })
     }
   }
 
-  /*
-   *  Cria um novo perfil
-   */
-  public async store({ request, response }: HttpContextContract) {
-    const data = request.only([
-      'userId',
-      'photo',
-      'bio',
-      'technologies',
-      'friends',
-      'levels',
-      'username',
-    ])
+  public async store({ request, response, auth }: HttpContextContract) {
+    const data = request.only(['photo', 'bio', 'technologies', 'levels', 'username'])
 
     try {
-      const profile = await Profile.create(data)
+      const existingProfile = await Profile.find(auth.user!.id)
+      if (existingProfile) {
+        return response.badRequest({ error: 'Perfil ja existe' })
+      }
+
+      const profile = await Profile.create({
+        userId: auth.user!.id,
+        photo: data.photo ?? '',
+        bio: data.bio ?? '',
+        technologies: this.parseArrayField(data.technologies),
+        friends: [],
+        levels: this.parseArrayField(data.levels),
+        username: data.username ?? auth.user!.username,
+      })
+
       return response.created({ profile })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao criar perfil', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao criar perfil' })
     }
   }
 
-  /*
-   *  Atualiza um perfil
-   */
-  public async update({ params, request, response }: HttpContextContract) {
-    const profileId = params.id
+  public async update({ params, request, response, auth }: HttpContextContract) {
+    const profileId = Number(params.id)
 
     if (!profileId) {
-      return response.badRequest({ error: 'ID do perfil não foi fornecido' })
+      return response.badRequest({ error: 'ID do perfil nao foi fornecido' })
     }
 
-    const data = request.only(['photo', 'bio', 'technologies', 'friends', 'levels', 'username'])
-
-    // Corrige campos que podem vir como string JSON
-    const parseJSONField = (field: any) => {
-      if (typeof field === 'string') {
-        try {
-          return JSON.parse(field)
-        } catch {
-          return []
-        }
-      }
-      return field
+    if (profileId !== auth.user!.id) {
+      return response.forbidden({ error: 'Voce nao pode alterar este perfil' })
     }
 
-    data.technologies = parseJSONField(data.technologies)
-    data.friends = parseJSONField(data.friends)
-    data.levels = parseJSONField(data.levels)
+    const data = request.only(['bio', 'technologies', 'levels', 'username'])
 
     try {
       const profile = await Profile.findOrFail(profileId)
-
-      const updateData: Partial<typeof profile> = {}
-
-      const imageFile = request.file('photo')
+      const updateData: Partial<Profile> = {}
+      const imageFile = request.file('photo', this.imageValidationOptions)
 
       if (imageFile) {
-        const imageName = `${uuidv4()}.${imageFile.extname}`
-        const uploadFolder = process.env.TMP_PATH || 'tmp/uploads'
+        const imageName = `${randomUUID()}.${imageFile.extname}`
+        const uploadFolder = Application.tmpPath('uploads')
         const imagePath = `${uploadFolder}/${imageName}`
 
         await imageFile.move(uploadFolder, { name: imageName, overwrite: true })
@@ -151,15 +145,21 @@ export default class ProfileController {
         const uploadResult = await uploadToCloudinary(imagePath)
         updateData.photo = (uploadResult as any).secure_url
 
-        fs.unlinkSync(imagePath)
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath)
+        }
       }
 
-      if (data.bio) updateData.bio = data.bio
-      if (data.username) updateData.username = data.username
-      if (Array.isArray(data.technologies) && data.technologies.length)
-        updateData.technologies = data.technologies
-      if (Array.isArray(data.friends) && data.friends.length) updateData.friends = data.friends
-      if (Array.isArray(data.levels) && data.levels.length) updateData.levels = data.levels
+      if (typeof data.bio === 'string') updateData.bio = data.bio
+      if (typeof data.username === 'string' && data.username.trim()) {
+        updateData.username = data.username.trim()
+      }
+      if (data.technologies !== undefined) {
+        updateData.technologies = this.parseArrayField(data.technologies)
+      }
+      if (data.levels !== undefined) {
+        updateData.levels = this.parseArrayField(data.levels)
+      }
 
       if (Object.keys(updateData).length === 0) {
         return response.ok({ message: 'Nenhum campo alterado', profile })
@@ -169,52 +169,59 @@ export default class ProfileController {
       await profile.save()
 
       return response.ok({ message: 'Perfil atualizado com sucesso', profile })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao atualizar perfil', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao atualizar perfil' })
     }
   }
 
-  /*
-   *  Deleta um perfil
-   */
-  public async destroy({ params, response }: HttpContextContract) {
-    const profileId = params.id
+  public async destroy({ params, response, auth }: HttpContextContract) {
+    const profileId = Number(params.id)
+
+    if (profileId !== auth.user!.id) {
+      return response.forbidden({ error: 'Voce nao pode deletar este perfil' })
+    }
 
     try {
       const profile = await Profile.findOrFail(profileId)
       await profile.delete()
       return response.ok({ message: 'Perfil deletado com sucesso' })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao deletar perfil', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao deletar perfil' })
     }
   }
 
-  /*
-   *  Adiciona amigo
-   */
   public async addFriend({ auth, request, response }: HttpContextContract) {
     const userId = auth.user?.id
     if (!userId) {
-      return response.unauthorized({ error: 'Usuário não autenticado' })
+      return response.unauthorized({ error: 'Usuario nao autenticado' })
     }
 
     const { friendId } = request.only(['friendId'])
     const normalizedFriendId = Number(friendId)
-    if (Number.isNaN(normalizedFriendId)) {
-      return response.badRequest({ error: 'friendId inválido' })
+
+    if (!normalizedFriendId || Number.isNaN(normalizedFriendId)) {
+      return response.badRequest({ error: 'friendId invalido' })
+    }
+
+    if (normalizedFriendId === userId) {
+      return response.badRequest({ error: 'Voce nao pode adicionar a si mesmo' })
     }
 
     try {
       const myProfile = await Profile.query().where('userId', userId).firstOrFail()
+      const friendProfile = await Profile.query().where('userId', normalizedFriendId).first()
+
+      if (!friendProfile) {
+        return response.notFound({ error: 'Perfil do amigo nao encontrado' })
+      }
+
       const currentFriends = Array.isArray(myProfile.friends) ? myProfile.friends.map(Number) : []
 
-      // Evita duplicar amizade
       if (!currentFriends.includes(normalizedFriendId)) {
-        myProfile.friends.push(normalizedFriendId)
+        myProfile.friends = [...currentFriends, normalizedFriendId]
         await myProfile.save()
       }
 
-      // Envia notificação para o usuário que está sendo adicionado
       await NotificationService.send(normalizedFriendId, 'friend_request', {
         fromUserId: myProfile.userId,
         fromUsername: myProfile.username,
@@ -224,38 +231,30 @@ export default class ProfileController {
         message: 'Convite de amizade enviado com sucesso',
         friends: myProfile.friends,
       })
-    } catch (error) {
-      return response.badRequest({
-        error: 'Erro ao adicionar amigo',
-        details: error.message,
-      })
+    } catch {
+      return response.badRequest({ error: 'Erro ao adicionar amigo' })
     }
   }
 
-  /*
-   *  Remove amigo
-   */
   public async removeFriend({ auth, params, response }: HttpContextContract) {
     const userId = auth.user?.id
     if (!userId) {
-      return response.unauthorized({ error: 'Usuário não autenticado' })
+      return response.unauthorized({ error: 'Usuario nao autenticado' })
     }
 
-    const rawFriendId = params.friendId
-    const friendId = Number(rawFriendId)
+    const friendId = Number(params.friendId)
 
-    if (Number.isNaN(friendId)) {
-      return response.badRequest({ error: 'friendId inválido' })
+    if (!friendId || Number.isNaN(friendId)) {
+      return response.badRequest({ error: 'friendId invalido' })
     }
 
     try {
       const profile = await Profile.query().where('userId', userId).firstOrFail()
-
-      // Garante que é um array
       const current = Array.isArray(profile.friends) ? profile.friends : []
 
-      // Converte todos para número antes de filtrar
-      profile.friends = current.map((f) => Number(f)).filter((f) => f !== friendId)
+      profile.friends = current
+        .map((friend) => Number(friend))
+        .filter((friend) => friend !== friendId)
 
       await profile.save()
 
@@ -263,28 +262,17 @@ export default class ProfileController {
         message: 'Amigo removido com sucesso',
         friends: profile.friends,
       })
-    } catch (error) {
-      return response.badRequest({
-        error: 'Erro ao remover amigo',
-        details: error.message,
-      })
+    } catch {
+      return response.badRequest({ error: 'Erro ao remover amigo' })
     }
   }
 
-  /*
-   *  Lista todos os amigos
-   */
   public async listFriends({ auth, response }: HttpContextContract) {
     const userId = auth.user!.id
-
-    if (!userId) {
-      return response.unauthorized({ error: 'Usuário não autenticado' })
-    }
 
     try {
       const profile = await Profile.findOrFail(userId)
       const friendIds = Array.isArray(profile.friends) ? profile.friends.map(String) : []
-
       const friends = await Profile.query().whereIn('userId', friendIds)
 
       const myFriends = friends.filter((friend) => {
@@ -293,29 +281,26 @@ export default class ProfileController {
       })
 
       return response.ok({ myFriends })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao listar amigos', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao listar amigos' })
     }
   }
 
-  /*
-   *  Lista amigos de um usuário pelo ID
-   */
   public async listFriendsByID({ params, response }: HttpContextContract) {
     const userId = params.userId || params.id
 
     if (!userId) {
-      return response.badRequest({ error: 'ID do usuário não foi fornecido' })
+      return response.badRequest({ error: 'ID do usuario nao foi fornecido' })
     }
 
     try {
       const profile = await Profile.find(userId)
 
       if (!profile) {
-        return response.notFound({ error: 'Perfil não encontrado' })
+        return response.notFound({ error: 'Perfil nao encontrado' })
       }
 
-      const friendIds = profile.friends.map(String)
+      const friendIds = Array.isArray(profile.friends) ? profile.friends.map(String) : []
       const friends = await Profile.query().whereIn('userId', friendIds)
 
       const myFriends = friends.filter((friend) => {
@@ -324,8 +309,8 @@ export default class ProfileController {
       })
 
       return response.ok({ myFriends })
-    } catch (error) {
-      return response.badRequest({ error: 'Erro ao listar amigos', details: error.message })
+    } catch {
+      return response.badRequest({ error: 'Erro ao listar amigos' })
     }
   }
 }

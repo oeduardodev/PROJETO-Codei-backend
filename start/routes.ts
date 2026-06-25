@@ -2,8 +2,7 @@ import Route from '@ioc:Adonis/Core/Route'
 
 Route.get('/', async () => {
   return {
-    hello: 'world',
-    conected: process.env.DB_CONNECTION,
+    status: 'ok',
   }
 })
 
@@ -12,8 +11,8 @@ Route.group(() => {
   Route.group(() => {
     Route.post('/login', 'UsersController.login')
     Route.post('/register', 'UsersController.register')
-      Route.get('/google', 'GoogleAuthController.redirect')
-      Route.get('/google/callback', 'GoogleAuthController.callback')
+    Route.get('/google', 'GoogleAuthController.redirect')
+    Route.get('/google/callback', 'GoogleAuthController.callback')
     Route.get('/user', 'UsersController.show').middleware('auth')
     Route.get('/user/:id', 'UsersController.showById')
   }).prefix('/auth')
@@ -23,8 +22,9 @@ Route.group(() => {
     Route.get('/', 'MomentsController.index')
     Route.post('/', 'MomentsController.store').middleware('auth')
     Route.get('/:id', 'MomentsController.show')
+    Route.put('/:id', 'MomentsController.update').middleware('auth')
     Route.delete('/:id', 'MomentsController.destroy').middleware('auth')
-    Route.post('/:id/comments', 'CommentsController.store')
+    Route.post('/:id/comments', 'CommentsController.store').middleware('auth')
     Route.get('/:id/comments', 'CommentsController.showByMomentId')
     Route.post('/:id/like', 'LikesController.like').middleware('auth')
     Route.get('/:id/like', 'LikesController.checkLike').middleware('auth')
